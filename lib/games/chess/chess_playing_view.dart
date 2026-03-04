@@ -1,6 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import 'chess_game_state.dart';
+
+const _pieceIcons = {
+  'p': Symbols.chess_pawn,
+  'n': Symbols.chess_knight,
+  'b': Symbols.chess_bishop,
+  'r': Symbols.chess_rook,
+  'q': Symbols.chess_queen,
+  'k': Symbols.chess_king_2,
+};
 
 class ChessPlayingView extends StatelessWidget {
   final ChessGameState state;
@@ -32,16 +43,15 @@ class ChessPlayingView extends StatelessWidget {
           ),
         ),
 
-        // Puzzle description
+        // Puzzle rating badge
         if (state.gameMode == ChessGameMode.puzzle &&
-            state.currentPuzzle?.description != null &&
+            state.currentPuzzle != null &&
             state.puzzleStatus == 'playing')
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
-              state.currentPuzzle!.description!,
-              style: textTheme.bodyMedium?.copyWith(
-                fontStyle: FontStyle.italic,
+              'Rating: ${state.currentPuzzle!.rating}',
+              style: textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
             ),
@@ -70,21 +80,17 @@ class ChessPlayingView extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                for (final p in [
-                  ('q', '\u265B'),
-                  ('r', '\u265C'),
-                  ('b', '\u265D'),
-                  ('n', '\u265E'),
-                ])
+                for (final type in ['q', 'r', 'b', 'n'])
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: OutlinedButton(
-                      onPressed: () => state.promote(p.$1),
+                      onPressed: () => state.promote(type),
                       style: OutlinedButton.styleFrom(
                         fixedSize: const Size(52, 52),
                         padding: EdgeInsets.zero,
                       ),
-                      child: Text(p.$2, style: const TextStyle(fontSize: 28)),
+                      child: Icon(_pieceIcons[type], size: 28,
+                        color: colorScheme.onSurface),
                     ),
                   ),
               ],
@@ -225,9 +231,9 @@ class ChessPlayingView extends StatelessWidget {
           } else if (isLast) {
             bgColor = colorScheme.primary.withValues(alpha: 0.2);
           } else if (isLight) {
-            bgColor = colorScheme.surfaceContainer;
+            bgColor = const Color(0xFFF0D9B5);
           } else {
-            bgColor = colorScheme.surfaceContainerHighest;
+            bgColor = const Color(0xFFB58863);
           }
 
           return GestureDetector(
@@ -237,16 +243,31 @@ class ChessPlayingView extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  if (piece.isNotEmpty)
+                  if (piece != null)
                     FittedBox(
                       fit: BoxFit.contain,
                       child: Padding(
-                        padding: const EdgeInsets.all(2),
-                        child: Text(piece,
-                            style: const TextStyle(fontSize: 40)),
+                        padding: const EdgeInsets.all(3),
+                        child: Icon(
+                          _pieceIcons[piece.type],
+                          fill: 1,
+                          color: piece.isWhite
+                              ? const Color(0xFFFFF8E7)
+                              : const Color(0xFF1A1A1A),
+                          size: 32,
+                          weight: 300,
+                          shadows: piece.isWhite
+                              ? const [
+                                  Shadow(color: Color(0xAA000000), blurRadius: 0.5),
+                                  Shadow(color: Color(0x66000000), blurRadius: 2),
+                                ]
+                              : const [
+                                  Shadow(color: Color(0x33000000), blurRadius: 1),
+                                ],
+                        ),
                       ),
                     ),
-                  if (isLegal && piece.isEmpty)
+                  if (isLegal && piece == null)
                     Container(
                       width: 12,
                       height: 12,
@@ -255,7 +276,7 @@ class ChessPlayingView extends StatelessWidget {
                         color: colorScheme.primary.withValues(alpha: 0.4),
                       ),
                     ),
-                  if (isLegal && piece.isNotEmpty)
+                  if (isLegal && piece != null)
                     Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,

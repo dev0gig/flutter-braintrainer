@@ -43,11 +43,14 @@ class StroopPlayingView extends StatelessWidget {
               children: [
                 // Instruction
                 Text(
-                  round.askForColor
-                      ? 'Welche FARBE hat das Wort?'
-                      : 'Was STEHT dort geschrieben?',
+                  state.difficulty == StroopDifficulty.hard
+                      ? (round.askForColor ? 'FARBE' : 'TEXT')
+                      : 'Welche FARBE hat das Wort?',
                   style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant),
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: state.difficulty == StroopDifficulty.hard
+                        ? FontWeight.bold : null,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 // The stroop word

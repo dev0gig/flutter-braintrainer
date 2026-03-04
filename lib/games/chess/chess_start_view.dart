@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'chess_game_state.dart';
+import 'chess_puzzles.dart';
 
 class ChessStartView extends StatelessWidget {
   final ChessGameState state;
@@ -73,9 +74,11 @@ class ChessStartView extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Difficulty
-              Text('SCHWIERIGKEIT', style: textTheme.labelSmall?.copyWith(
-                color: colorScheme.onSurfaceVariant, letterSpacing: 1.5)),
+              // Difficulty / Category
+              Text(
+                state.gameMode == ChessGameMode.computer ? 'SCHWIERIGKEIT' : 'KATEGORIE',
+                style: textTheme.labelSmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant, letterSpacing: 1.5)),
               const SizedBox(height: 12),
 
               if (state.gameMode == ChessGameMode.computer) ...[
@@ -107,29 +110,29 @@ class ChessStartView extends StatelessWidget {
                 ),
               ] else ...[
                 _DifficultyButton(
-                  label: 'Leicht',
-                  badge: 'Matt in 1',
+                  label: 'Matt in 1',
+                  badge: '800–1600',
                   badgeColor: Colors.green,
-                  selected: state.puzzleDifficulty == ChessDifficulty.easy,
-                  onTap: () => state.setPuzzleDifficulty(ChessDifficulty.easy),
+                  selected: state.puzzleCategory == PuzzleCategory.mateIn1,
+                  onTap: () => state.setPuzzleCategory(PuzzleCategory.mateIn1),
                   colorScheme: colorScheme,
                 ),
                 const SizedBox(height: 8),
                 _DifficultyButton(
-                  label: 'Mittel',
-                  badge: 'Matt in 2',
+                  label: 'Matt in 2',
+                  badge: '1000–1800',
                   badgeColor: Colors.orange,
-                  selected: state.puzzleDifficulty == ChessDifficulty.medium,
-                  onTap: () => state.setPuzzleDifficulty(ChessDifficulty.medium),
+                  selected: state.puzzleCategory == PuzzleCategory.mateIn2,
+                  onTap: () => state.setPuzzleCategory(PuzzleCategory.mateIn2),
                   colorScheme: colorScheme,
                 ),
                 const SizedBox(height: 8),
                 _DifficultyButton(
-                  label: 'Schwer',
-                  badge: 'Taktik',
+                  label: 'Taktik',
+                  badge: '1200–2000',
                   badgeColor: Colors.red,
-                  selected: state.puzzleDifficulty == ChessDifficulty.hard,
-                  onTap: () => state.setPuzzleDifficulty(ChessDifficulty.hard),
+                  selected: state.puzzleCategory == PuzzleCategory.tactic,
+                  onTap: () => state.setPuzzleCategory(PuzzleCategory.tactic),
                   colorScheme: colorScheme,
                 ),
               ],

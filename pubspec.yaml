@@ -16,6 +16,7 @@ dependencies:
   share_plus: ^11.0.0
   file_picker: ^9.0.0
   path_provider: ^2.1.0
+  material_symbols_icons: ^4.2815.0
 
 dev_dependencies:
   flutter_test:
@@ -24,3 +25,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/puzzles.json

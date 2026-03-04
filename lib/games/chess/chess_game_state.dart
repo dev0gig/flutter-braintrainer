@@ -12,10 +12,8 @@ enum ChessDifficulty { easy, medium, hard }
 
 enum ChessPhase { start, playing }
 
-const _pieceSymbols = {
-  'wp': '\u265F', 'wn': '\u265E', 'wb': '\u265D', 'wr': '\u265C', 'wq': '\u265B', 'wk': '\u265A',
-  'bp': '\u2659', 'bn': '\u2658', 'bb': '\u2657', 'br': '\u2656', 'bq': '\u2655', 'bk': '\u2654',
-};
+/// Piece info: (type, isWhite) — type is one of p, n, b, r, q, k.
+typedef PieceInfo = ({String type, bool isWhite});
 
 const _pieceValues = {'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 0};
 
@@ -27,7 +25,8 @@ class ChessGameState extends ChangeNotifier {
   ChessPhase phase = ChessPhase.start;
   ChessGameMode gameMode = ChessGameMode.computer;
   ChessDifficulty difficulty = ChessDifficulty.medium;
-  ChessDifficulty puzzleDifficulty = ChessDifficulty.easy;
+  PuzzleCategory puzzleCategory = PuzzleCategory.mateIn1;
+  Map<PuzzleCategory, List<ChessPuzzle>>? _puzzleData;
 
   String? selected;
   List<String> legalTargets = [];
@@ -66,12 +65,10 @@ class ChessGameState extends ChangeNotifier {
     return (row + col) % 2 == 0;
   }
 
-  String pieceAt(String square) {
+  PieceInfo? pieceAt(String square) {
     final p = chess.get(square);
-    if (p == null) return '';
-    final colorChar = p.color == ch.Color.WHITE ? 'w' : 'b';
-    final typeChar = p.type.toString().toLowerCase();
-    return _pieceSymbols['$colorChar$typeChar'] ?? '';
+    if (p == null) return null;
+    return (type: p.type.toString().toLowerCase(), isWhite: p.color == ch.Color.WHITE);
   }
 
   bool isSelected(String square) => selected == square;
@@ -187,7 +184,7 @@ class ChessGameState extends ChangeNotifier {
   // --- Puzzle mode ---
 
   void _loadPuzzle() {
-    final puzzles = puzzlesByDifficulty[puzzleDifficulty.name]!;
+    final puzzles = _puzzleData![puzzleCategory]!;
     if (_usedPuzzleIndices.length >= puzzles.length) {
       _usedPuzzleIndices.clear();
     }
@@ -200,15 +197,27 @@ class ChessGameState extends ChangeNotifier {
 
     _usedPuzzleIndices.add(idx);
     currentPuzzle = puzzles[idx];
-    puzzleSolutionIndex = 0;
     puzzleStatus = 'playing';
     puzzleFeedback = '';
 
     chess = ch.Chess.fromFEN(currentPuzzle!.fen);
+
+    // Lichess puzzles: first move is the opponent's setup move.
+    // Play it automatically, then the player solves from index 1.
+    final setupUci = currentPuzzle!.moves[0];
+    final from = setupUci.substring(0, 2);
+    final to = setupUci.substring(2, 4);
+    final promo = setupUci.length > 4 ? setupUci[4] : null;
+    final moveArgs = <String, String>{'from': from, 'to': to};
+    if (promo != null) moveArgs['promotion'] = promo;
+    chess.move(moveArgs);
+    lastMove = (from: from, to: to);
+    puzzleSolutionIndex = 1;
+
+    // Player plays the color that moves after the setup move
     playerColor = chess.turn == ch.Color.WHITE ? 'w' : 'b';
     selected = null;
     legalTargets = [];
-    lastMove = null;
     status = '';
   }
 
@@ -234,7 +243,7 @@ class ChessGameState extends ChangeNotifier {
   void _executePuzzleMove(String from, String to, [String? promotion]) {
     if (currentPuzzle == null) return;
 
-    final expectedUci = currentPuzzle!.solution[puzzleSolutionIndex];
+    final expectedUci = currentPuzzle!.moves[puzzleSolutionIndex];
     final moveUci = '$from$to${promotion ?? ''}';
 
     if (moveUci != expectedUci) {
@@ -256,7 +265,7 @@ class ChessGameState extends ChangeNotifier {
     puzzleSolutionIndex++;
 
     // Check if puzzle is complete
-    if (puzzleSolutionIndex >= currentPuzzle!.solution.length) {
+    if (puzzleSolutionIndex >= currentPuzzle!.moves.length) {
       puzzleStatus = 'solved';
       puzzleScore++;
       puzzleFeedback = 'solved';
@@ -264,7 +273,8 @@ class ChessGameState extends ChangeNotifier {
         gameId: 'chess',
         score: puzzleScore,
         date: DateTime.now(),
-        difficulty: puzzleDifficulty.name,
+        difficulty: puzzleCategory.name,
+        settings: {'mode': gameMode.name, 'category': puzzleCategory.name},
       ));
       notifyListeners();
       return;
@@ -282,7 +292,7 @@ class ChessGameState extends ChangeNotifier {
 
   void _playPuzzleOpponentMove() {
     if (currentPuzzle == null) return;
-    final opponentUci = currentPuzzle!.solution[puzzleSolutionIndex];
+    final opponentUci = currentPuzzle!.moves[puzzleSolutionIndex];
 
     final from = opponentUci.substring(0, 2);
     final to = opponentUci.substring(2, 4);
@@ -295,7 +305,7 @@ class ChessGameState extends ChangeNotifier {
     puzzleSolutionIndex++;
 
     // Check if puzzle complete after opponent move
-    if (puzzleSolutionIndex >= currentPuzzle!.solution.length) {
+    if (puzzleSolutionIndex >= currentPuzzle!.moves.length) {
       puzzleStatus = 'solved';
       puzzleScore++;
       puzzleFeedback = 'solved';
@@ -303,7 +313,8 @@ class ChessGameState extends ChangeNotifier {
         gameId: 'chess',
         score: puzzleScore,
         date: DateTime.now(),
-        difficulty: puzzleDifficulty.name,
+        difficulty: puzzleCategory.name,
+        settings: {'mode': gameMode.name, 'category': puzzleCategory.name},
       ));
     }
   }
@@ -409,7 +420,7 @@ class ChessGameState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void startGame() {
+  Future<void> startGame() async {
     chess = ch.Chess();
     selected = null;
     legalTargets = [];
@@ -423,6 +434,7 @@ class ChessGameState extends ChangeNotifier {
       puzzleScore = 0;
       puzzleTotal = 0;
       _usedPuzzleIndices.clear();
+      _puzzleData ??= await loadPuzzles();
       _loadPuzzle();
     }
     notifyListeners();
@@ -453,8 +465,8 @@ class ChessGameState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setPuzzleDifficulty(ChessDifficulty d) {
-    puzzleDifficulty = d;
+  void setPuzzleCategory(PuzzleCategory c) {
+    puzzleCategory = c;
     notifyListeners();
   }
 }
