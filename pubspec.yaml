@@ -1,0 +1,26 @@
+name: braintrainer
+description: "Brain Training Games for ADHD"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dynamic_color: ^1.7.0
+  hive_ce: ^2.10.0
+  hive_ce_flutter: ^2.2.0
+  chess: ^0.8.0
+  share_plus: ^11.0.0
+  file_picker: ^9.0.0
+  path_provider: ^2.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
