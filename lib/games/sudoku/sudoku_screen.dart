@@ -33,6 +33,9 @@ class _SudokuScreenState extends State<SudokuScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_state.isGenerating) {
+      return const Center(child: CircularProgressIndicator());
+    }
     switch (_state.phase) {
       case SudokuPhase.start:
         return SudokuStartView(state: _state);

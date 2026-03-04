@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/score_service.dart';
@@ -8,9 +9,92 @@ enum SudokuDifficulty { easy, medium, hard }
 
 enum SudokuPhase { start, playing }
 
-class SudokuGameState extends ChangeNotifier {
-  final _random = Random();
+// Top-level functions for compute() isolate
 
+Map<String, List<int>> _generatePuzzleIsolate(SudokuDifficulty difficulty) {
+  final random = Random();
+  final grid = List.filled(81, 0);
+  _fillGrid(grid, random);
+  final solution = List<int>.from(grid);
+
+  final cellsToRemove = switch (difficulty) {
+    SudokuDifficulty.easy => 39,
+    SudokuDifficulty.medium => 49,
+    SudokuDifficulty.hard => 57,
+  };
+
+  final indices = List.generate(81, (i) => i)..shuffle(random);
+  var removed = 0;
+  for (final index in indices) {
+    if (removed >= cellsToRemove) break;
+    final backup = grid[index];
+    grid[index] = 0;
+    if (_countSolutions(List.from(grid)) == 1) {
+      removed++;
+    } else {
+      grid[index] = backup;
+    }
+  }
+
+  return {'grid': grid, 'solution': solution};
+}
+
+bool _fillGrid(List<int> board, Random random) {
+  final emptyIndex = board.indexOf(0);
+  if (emptyIndex == -1) return true;
+
+  final numbers = List.generate(9, (i) => i + 1)..shuffle(random);
+  for (final num in numbers) {
+    if (_isValid(board, emptyIndex, num)) {
+      board[emptyIndex] = num;
+      if (_fillGrid(board, random)) return true;
+      board[emptyIndex] = 0;
+    }
+  }
+  return false;
+}
+
+int _countSolutions(List<int> board) {
+  final emptyIndex = board.indexOf(0);
+  if (emptyIndex == -1) return 1;
+
+  var count = 0;
+  for (var num = 1; num <= 9; num++) {
+    if (_isValid(board, emptyIndex, num)) {
+      board[emptyIndex] = num;
+      count += _countSolutions(board);
+      if (count > 1) {
+        board[emptyIndex] = 0;
+        return count;
+      }
+      board[emptyIndex] = 0;
+    }
+  }
+  return count;
+}
+
+bool _isValid(List<int> board, int index, int number) {
+  final row = index ~/ 9;
+  final col = index % 9;
+
+  for (var c = 0; c < 9; c++) {
+    if (board[row * 9 + c] == number) return false;
+  }
+  for (var r = 0; r < 9; r++) {
+    if (board[r * 9 + col] == number) return false;
+  }
+
+  final boxRow = (row ~/ 3) * 3;
+  final boxCol = (col ~/ 3) * 3;
+  for (var r = boxRow; r < boxRow + 3; r++) {
+    for (var c = boxCol; c < boxCol + 3; c++) {
+      if (board[r * 9 + c] == number) return false;
+    }
+  }
+  return true;
+}
+
+class SudokuGameState extends ChangeNotifier {
   SudokuPhase phase = SudokuPhase.start;
   SudokuDifficulty difficulty = SudokuDifficulty.easy;
 
@@ -34,25 +118,23 @@ class SudokuGameState extends ChangeNotifier {
     }
   }
 
-  int get _cellsToRemove {
-    switch (difficulty) {
-      case SudokuDifficulty.easy:
-        return 39;
-      case SudokuDifficulty.medium:
-        return 49;
-      case SudokuDifficulty.hard:
-        return 57;
-    }
-  }
+  bool isGenerating = false;
 
-  void startGame(SudokuDifficulty diff) {
+  Future<void> startGame(SudokuDifficulty diff) async {
     difficulty = diff;
     isComplete = false;
     isNoteMode = false;
     selectedCell = null;
     notes = List.generate(81, (_) => []);
+    isGenerating = true;
+    notifyListeners();
 
-    _generatePuzzle();
+    final result = await compute(_generatePuzzleIsolate, diff);
+    grid = result['grid']!;
+    solution = result['solution']!;
+    initialGrid = List.generate(81, (i) => grid[i] != 0);
+
+    isGenerating = false;
     phase = SudokuPhase.playing;
     notifyListeners();
   }
@@ -161,88 +243,4 @@ class SudokuGameState extends ChangeNotifier {
     ));
   }
 
-  // --- Puzzle Generation ---
-
-  void _generatePuzzle() {
-    grid = List.filled(81, 0);
-    _fillGrid(grid);
-    solution = List.from(grid);
-
-    _createPuzzle();
-
-    initialGrid = List.generate(81, (i) => grid[i] != 0);
-  }
-
-  bool _fillGrid(List<int> board) {
-    final emptyIndex = board.indexOf(0);
-    if (emptyIndex == -1) return true;
-
-    final numbers = List.generate(9, (i) => i + 1)..shuffle(_random);
-    for (final num in numbers) {
-      if (_isValid(board, emptyIndex, num)) {
-        board[emptyIndex] = num;
-        if (_fillGrid(board)) return true;
-        board[emptyIndex] = 0;
-      }
-    }
-    return false;
-  }
-
-  void _createPuzzle() {
-    final indices = List.generate(81, (i) => i)..shuffle(_random);
-    var removed = 0;
-
-    for (final index in indices) {
-      if (removed >= _cellsToRemove) break;
-
-      final backup = grid[index];
-      grid[index] = 0;
-
-      if (_countSolutions(List.from(grid)) == 1) {
-        removed++;
-      } else {
-        grid[index] = backup;
-      }
-    }
-  }
-
-  int _countSolutions(List<int> board) {
-    final emptyIndex = board.indexOf(0);
-    if (emptyIndex == -1) return 1;
-
-    var count = 0;
-    for (var num = 1; num <= 9; num++) {
-      if (_isValid(board, emptyIndex, num)) {
-        board[emptyIndex] = num;
-        count += _countSolutions(board);
-        if (count > 1) {
-          board[emptyIndex] = 0;
-          return count;
-        }
-        board[emptyIndex] = 0;
-      }
-    }
-    return count;
-  }
-
-  bool _isValid(List<int> board, int index, int number) {
-    final row = index ~/ 9;
-    final col = index % 9;
-
-    for (var c = 0; c < 9; c++) {
-      if (board[row * 9 + c] == number) return false;
-    }
-    for (var r = 0; r < 9; r++) {
-      if (board[r * 9 + col] == number) return false;
-    }
-
-    final boxRow = (row ~/ 3) * 3;
-    final boxCol = (col ~/ 3) * 3;
-    for (var r = boxRow; r < boxRow + 3; r++) {
-      for (var c = boxCol; c < boxCol + 3; c++) {
-        if (board[r * 9 + c] == number) return false;
-      }
-    }
-    return true;
-  }
 }
