@@ -1,11 +1,43 @@
 import 'package:flutter/material.dart';
 
+import '../../services/game_state_service.dart';
 import 'sudoku_game_state.dart';
 
-class SudokuStartView extends StatelessWidget {
+class SudokuStartView extends StatefulWidget {
   final SudokuGameState state;
 
   const SudokuStartView({super.key, required this.state});
+
+  @override
+  State<SudokuStartView> createState() => _SudokuStartViewState();
+}
+
+class _SudokuStartViewState extends State<SudokuStartView> {
+  bool _hasSavedState = false;
+  String? _savedDifficulty;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSavedState();
+  }
+
+  Future<void> _checkSavedState() async {
+    final data = await GameStateService.loadState('sudoku');
+    if (mounted) {
+      setState(() {
+        _hasSavedState = data != null;
+        if (data != null) {
+          _savedDifficulty = switch (data['difficulty'] as String?) {
+            'easy' => 'Leicht',
+            'medium' => 'Mittel',
+            'hard' => 'Schwer',
+            _ => null,
+          };
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +69,17 @@ class SudokuStartView extends StatelessWidget {
               ),
               const SizedBox(height: 32),
 
+              if (_hasSavedState) ...[
+                FilledButton.icon(
+                  onPressed: () => widget.state.tryResume(),
+                  icon: const Icon(Icons.play_arrow),
+                  label: Text('Weiterspielen${_savedDifficulty != null ? ' ($_savedDifficulty)' : ''}'),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 56)),
+                ),
+                const SizedBox(height: 24),
+              ],
+
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text('SCHWIERIGKEIT', style: textTheme.labelSmall?.copyWith(
@@ -47,7 +90,7 @@ class SudokuStartView extends StatelessWidget {
               _DifficultyButton(
                 label: 'Leicht',
                 hint: '~42 Zahlen vorgegeben',
-                onTap: () => state.startGame(SudokuDifficulty.easy),
+                onTap: () => widget.state.startGame(SudokuDifficulty.easy),
                 colorScheme: colorScheme,
                 textTheme: textTheme,
               ),
@@ -55,7 +98,7 @@ class SudokuStartView extends StatelessWidget {
               _DifficultyButton(
                 label: 'Mittel',
                 hint: '~32 Zahlen vorgegeben',
-                onTap: () => state.startGame(SudokuDifficulty.medium),
+                onTap: () => widget.state.startGame(SudokuDifficulty.medium),
                 colorScheme: colorScheme,
                 textTheme: textTheme,
               ),
@@ -63,7 +106,7 @@ class SudokuStartView extends StatelessWidget {
               _DifficultyButton(
                 label: 'Schwer',
                 hint: '~24 Zahlen vorgegeben',
-                onTap: () => state.startGame(SudokuDifficulty.hard),
+                onTap: () => widget.state.startGame(SudokuDifficulty.hard),
                 colorScheme: colorScheme,
                 textTheme: textTheme,
               ),

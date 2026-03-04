@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:chess/chess.dart' as ch;
 import 'package:flutter/foundation.dart';
 
+import '../../services/game_state_service.dart';
 import '../../services/score_service.dart';
 import 'chess_puzzles.dart';
 
@@ -146,9 +147,19 @@ class ChessGameState extends ChangeNotifier {
       Future.delayed(const Duration(milliseconds: 300), () {
         _computerMove();
         thinking = false;
+        if (chess.game_over) {
+          GameStateService.clearState('chess');
+        } else {
+          _saveState();
+        }
         notifyListeners();
       });
       return;
+    }
+    if (chess.game_over) {
+      GameStateService.clearState('chess');
+    } else {
+      _saveState();
     }
     notifyListeners();
   }
@@ -418,6 +429,7 @@ class ChessGameState extends ChangeNotifier {
     legalTargets = [];
     _updateStatus();
     notifyListeners();
+    _saveState();
   }
 
   Future<void> startGame() async {
@@ -438,6 +450,7 @@ class ChessGameState extends ChangeNotifier {
       _loadPuzzle();
     }
     notifyListeners();
+    _saveState();
   }
 
   void returnToStart() {
@@ -453,6 +466,40 @@ class ChessGameState extends ChangeNotifier {
     puzzleFeedback = '';
     phase = ChessPhase.start;
     notifyListeners();
+  }
+
+  Future<bool> tryResume() async {
+    final data = await GameStateService.loadState('chess');
+    if (data == null) return false;
+
+    chess = ch.Chess.fromFEN(data['fen'] as String);
+    difficulty = ChessDifficulty.values.byName(data['difficulty'] as String);
+    gameMode = ChessGameMode.computer;
+    playerColor = data['playerColor'] as String;
+    if (data['lastMoveFrom'] != null) {
+      lastMove = (from: data['lastMoveFrom'] as String, to: data['lastMoveTo'] as String);
+    } else {
+      lastMove = null;
+    }
+    selected = null;
+    legalTargets = [];
+    thinking = false;
+    _updateStatus();
+    phase = ChessPhase.playing;
+    notifyListeners();
+    return true;
+  }
+
+  void _saveState() {
+    if (gameMode != ChessGameMode.computer) return;
+    if (phase != ChessPhase.playing || chess.game_over) return;
+    GameStateService.saveState('chess', {
+      'fen': chess.fen,
+      'difficulty': difficulty.name,
+      'playerColor': playerColor,
+      if (lastMove != null) 'lastMoveFrom': lastMove!.from,
+      if (lastMove != null) 'lastMoveTo': lastMove!.to,
+    });
   }
 
   void setGameMode(ChessGameMode mode) {

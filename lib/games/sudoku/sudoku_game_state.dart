@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../services/game_state_service.dart';
 import '../../services/score_service.dart';
 
 enum SudokuDifficulty { easy, medium, hard }
@@ -137,11 +138,44 @@ class SudokuGameState extends ChangeNotifier {
     isGenerating = false;
     phase = SudokuPhase.playing;
     notifyListeners();
+    _saveState();
   }
 
   void returnToStart() {
     phase = SudokuPhase.start;
     notifyListeners();
+  }
+
+  Future<bool> tryResume() async {
+    final data = await GameStateService.loadState('sudoku');
+    if (data == null) return false;
+
+    grid = List<int>.from(data['grid'] as List);
+    solution = List<int>.from(data['solution'] as List);
+    initialGrid = List<bool>.from(data['initialGrid'] as List);
+    notes = (data['notes'] as List)
+        .map((e) => List<int>.from(e as List))
+        .toList();
+    difficulty = SudokuDifficulty.values.byName(data['difficulty'] as String);
+    isNoteMode = data['isNoteMode'] as bool;
+    isComplete = false;
+    selectedCell = null;
+    isGenerating = false;
+    phase = SudokuPhase.playing;
+    notifyListeners();
+    return true;
+  }
+
+  void _saveState() {
+    if (phase != SudokuPhase.playing || isComplete) return;
+    GameStateService.saveState('sudoku', {
+      'grid': grid,
+      'solution': solution,
+      'initialGrid': initialGrid,
+      'notes': notes,
+      'difficulty': difficulty.name,
+      'isNoteMode': isNoteMode,
+    });
   }
 
   void selectCell(int index) {
@@ -175,6 +209,7 @@ class SudokuGameState extends ChangeNotifier {
       _checkCompletion();
     }
     notifyListeners();
+    _saveState();
   }
 
   void clearCell() {
@@ -184,6 +219,7 @@ class SudokuGameState extends ChangeNotifier {
     grid[selectedCell!] = 0;
     notes[selectedCell!] = [];
     notifyListeners();
+    _saveState();
   }
 
   bool isError(int index) {
@@ -234,6 +270,7 @@ class SudokuGameState extends ChangeNotifier {
       if (grid[i] != solution[i]) return;
     }
     isComplete = true;
+    GameStateService.clearState('sudoku');
     ScoreService.saveScore(ScoreEntry(
       gameId: 'sudoku',
       score: 1,

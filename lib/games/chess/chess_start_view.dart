@@ -1,17 +1,50 @@
 import 'package:flutter/material.dart';
 
+import '../../services/game_state_service.dart';
 import 'chess_game_state.dart';
 import 'chess_puzzles.dart';
 
-class ChessStartView extends StatelessWidget {
+class ChessStartView extends StatefulWidget {
   final ChessGameState state;
 
   const ChessStartView({super.key, required this.state});
 
   @override
+  State<ChessStartView> createState() => _ChessStartViewState();
+}
+
+class _ChessStartViewState extends State<ChessStartView> {
+  bool _hasSavedState = false;
+  String? _savedDifficulty;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSavedState();
+  }
+
+  Future<void> _checkSavedState() async {
+    final data = await GameStateService.loadState('chess');
+    if (mounted) {
+      setState(() {
+        _hasSavedState = data != null;
+        if (data != null) {
+          _savedDifficulty = switch (data['difficulty'] as String?) {
+            'easy' => 'Leicht',
+            'medium' => 'Mittel',
+            'hard' => 'Schwer',
+            _ => null,
+          };
+        }
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final state = widget.state;
 
     return Center(
       child: SingleChildScrollView(
@@ -36,6 +69,17 @@ class ChessStartView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
+
+              if (_hasSavedState && state.gameMode == ChessGameMode.computer) ...[
+                FilledButton.icon(
+                  onPressed: () => state.tryResume(),
+                  icon: const Icon(Icons.play_arrow),
+                  label: Text('Weiterspielen${_savedDifficulty != null ? ' ($_savedDifficulty)' : ''}'),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 56)),
+                ),
+                const SizedBox(height: 24),
+              ],
 
               // Mode selector
               Text('MODUS', style: textTheme.labelSmall?.copyWith(
