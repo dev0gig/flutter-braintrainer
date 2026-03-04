@@ -41,6 +41,12 @@ class _MathTrainerScreenState extends State<MathTrainerScreen> {
         return MathPlayingView(state: _state);
       case MathPhase.result:
         return MathResultView(state: _state);
+      case MathPhase.sequenceMemorize:
+        return SequenceMemorizeView(state: _state);
+      case MathPhase.sequenceInput:
+        return SequenceInputView(state: _state);
+      case MathPhase.sequenceGameover:
+        return SequenceGameoverView(state: _state);
     }
   }
 }

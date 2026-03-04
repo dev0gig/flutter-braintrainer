@@ -12,7 +12,6 @@ import '../games/n_back/n_back_screen.dart';
 import '../games/memory_match/memory_match_screen.dart';
 import '../games/pattern_memory/pattern_memory_screen.dart';
 import '../games/schulte_table/schulte_table_screen.dart';
-import '../games/sequence_trainer/sequence_trainer_screen.dart';
 import '../games/stroop_test/stroop_test_screen.dart';
 import '../games/sudoku/sudoku_screen.dart';
 import '../games/switching_task/switching_task_screen.dart';
@@ -75,14 +74,6 @@ final List<GameDefinition> games = [
     icon: Icons.apps,
     scoreLabel: 'Zeit (s)',
     builder: () => const SchulteTableScreen(),
-  ),
-  GameDefinition(
-    id: 'sequence',
-    name: 'Sequenz',
-    description: 'Folgen fortsetzen',
-    icon: Icons.repeat,
-    scoreLabel: 'Punkte',
-    builder: () => const SequenceTrainerScreen(),
   ),
   GameDefinition(
     id: 'stroop-test',

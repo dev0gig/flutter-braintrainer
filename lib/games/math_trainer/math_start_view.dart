@@ -36,17 +36,21 @@ class MathStartView extends StatelessWidget {
                   style: textTheme.bodyLarge?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
-                  children: [
-                    const TextSpan(text: 'Löse so viele Rechenaufgaben wie möglich in '),
-                    TextSpan(
-                      text: '60 Sekunden',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    const TextSpan(text: '.'),
-                  ],
+                  children: state.mode == MathMode.sequence
+                      ? [
+                          const TextSpan(text: 'Merke dir die Regel und führe die Sequenz fort.'),
+                        ]
+                      : [
+                          const TextSpan(text: 'Löse so viele Rechenaufgaben wie möglich in '),
+                          TextSpan(
+                            text: '60 Sekunden',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          const TextSpan(text: '.'),
+                        ],
                 ),
               ),
               const SizedBox(height: 32),
@@ -74,10 +78,20 @@ class MathStartView extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _ModeButton(
-                      label: 'Kettenrechnen',
+                      label: 'Kette',
                       icon: Icons.link,
                       selected: state.mode == MathMode.chain,
                       onTap: () => state.setMode(MathMode.chain),
+                      colorScheme: colorScheme,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _ModeButton(
+                      label: 'Sequenz',
+                      icon: Icons.repeat,
+                      selected: state.mode == MathMode.sequence,
+                      onTap: () => state.setMode(MathMode.sequence),
                       colorScheme: colorScheme,
                     ),
                   ),
@@ -114,6 +128,42 @@ class MathStartView extends StatelessWidget {
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
+
+              // Rounds setting (sequence mode only)
+              if (state.mode == MathMode.sequence) ...[
+                const SizedBox(height: 24),
+                Text(
+                  'ANZAHL SCHRITTE',
+                  style: textTheme.labelSmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: colorScheme.outlineVariant),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        onPressed: () => state.adjustSequenceRounds(-5),
+                        icon: const Icon(Icons.remove),
+                      ),
+                      Text('${state.sequenceMaxRounds}', style: textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold, fontFamily: 'monospace')),
+                      IconButton(
+                        onPressed: () => state.adjustSequenceRounds(5),
+                        icon: const Icon(Icons.add),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 32),
 
               FilledButton(
@@ -161,6 +211,54 @@ class MathStartView extends StatelessWidget {
       );
     }
 
+    if (state.mode == MathMode.sequence) {
+      return Transform.rotate(
+        angle: 0.02,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: colorScheme.outlineVariant),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Start: ', style: textTheme.bodySmall?.copyWith(
+                    fontFamily: 'monospace',
+                    color: colorScheme.onSurfaceVariant,
+                  )),
+                  Text('10', style: textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'monospace',
+                  )),
+                  Text('  Regel: ', style: textTheme.bodySmall?.copyWith(
+                    fontFamily: 'monospace',
+                    color: colorScheme.onSurfaceVariant,
+                  )),
+                  Text('+4', style: textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
+                    fontFamily: 'monospace',
+                  )),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text('→ 14, 18, 22, 26 ...', style: textTheme.bodySmall?.copyWith(
+                fontFamily: 'monospace',
+                color: colorScheme.onSurfaceVariant,
+              )),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Chain mode
     return Transform.rotate(
       angle: -0.02,
       child: Container(

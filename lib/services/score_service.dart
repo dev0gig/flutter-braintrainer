@@ -73,6 +73,7 @@ String _formatValue(String gameId, String key, String value) {
     'mode' => switch (value) {
         'classic' => 'Klassisch',
         'chain' => 'Kette',
+        'sequence' => 'Sequenz',
         'computer' => 'Computer',
         'puzzle' => 'Puzzle',
         _ => value,
