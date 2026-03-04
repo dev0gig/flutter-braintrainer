@@ -158,6 +158,7 @@ class WcstGameState extends ChangeNotifier {
           gameId: 'wcst',
           score: accuracy,
           date: DateTime.now(),
+          settings: {},
         ));
       } else {
         _generateCard();

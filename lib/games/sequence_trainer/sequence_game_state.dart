@@ -102,6 +102,7 @@ class SequenceGameState extends ChangeNotifier {
           score: score,
           date: DateTime.now(),
           difficulty: difficulty.name,
+          settings: {'difficulty': difficulty.name, 'rounds': '$maxRounds'},
         ));
         notifyListeners();
       }
@@ -112,6 +113,7 @@ class SequenceGameState extends ChangeNotifier {
         score: score,
         date: DateTime.now(),
         difficulty: difficulty.name,
+        settings: {'difficulty': difficulty.name, 'rounds': '$maxRounds'},
       ));
       notifyListeners();
     }

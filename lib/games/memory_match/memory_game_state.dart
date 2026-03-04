@@ -124,6 +124,7 @@ class MemoryGameState extends ChangeNotifier {
             score: attempts,
             date: DateTime.now(),
             difficulty: difficulty.name,
+            settings: {'difficulty': difficulty.name},
           ));
         }
         notifyListeners();

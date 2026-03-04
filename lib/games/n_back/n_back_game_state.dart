@@ -186,6 +186,7 @@ class NBackGameState extends ChangeNotifier {
       gameId: 'n-back',
       score: accuracy,
       date: DateTime.now(),
+      settings: {'nLevel': '$nLevel', 'speed': '$speed', 'trials': '$totalTrials'},
     ));
     notifyListeners();
   }

@@ -195,6 +195,7 @@ class SwitchingGameState extends ChangeNotifier {
       gameId: 'switching-task',
       score: score,
       date: DateTime.now(),
+      settings: {'trials': '$totalTrials'},
     ));
     notifyListeners();
   }

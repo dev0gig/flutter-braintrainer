@@ -110,6 +110,7 @@ class SchulteGameState extends ChangeNotifier {
       gameId: 'schulte-table',
       score: (_stopwatch.elapsedMilliseconds / 1000).round(),
       date: DateTime.now(),
+      settings: {'gridSize': '$gridSize'},
     ));
     notifyListeners();
   }

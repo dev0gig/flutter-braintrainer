@@ -97,6 +97,7 @@ class StroopGameState extends ChangeNotifier {
           score: correctCount,
           date: DateTime.now(),
           difficulty: difficulty.name,
+          settings: {'difficulty': difficulty.name, 'rounds': '$maxRounds'},
         ));
       } else {
         _generateRound();

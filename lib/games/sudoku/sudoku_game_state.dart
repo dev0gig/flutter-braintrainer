@@ -157,6 +157,7 @@ class SudokuGameState extends ChangeNotifier {
       score: 1,
       date: DateTime.now(),
       difficulty: difficulty.name,
+      settings: {'difficulty': difficulty.name},
     ));
   }
 

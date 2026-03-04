@@ -263,6 +263,7 @@ class MathGameState extends ChangeNotifier {
       score: score,
       date: DateTime.now(),
       difficulty: difficulty.name,
+      settings: {'difficulty': difficulty.name, 'mode': mode.name},
     ));
     notifyListeners();
   }

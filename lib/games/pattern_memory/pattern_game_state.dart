@@ -126,6 +126,7 @@ class PatternGameState extends ChangeNotifier {
       gameId: 'pattern-memory',
       score: level - 1,
       date: DateTime.now(),
+      settings: {'grid': '${gridCols}x$gridRows', 'preview': '$previewTimeMs'},
     ));
     notifyListeners();
 

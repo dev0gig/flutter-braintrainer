@@ -6,19 +6,33 @@ class ScoreEntry {
   final int score;
   final DateTime date;
   final String? difficulty;
+  final Map<String, String>? settings;
 
   ScoreEntry({
     required this.gameId,
     required this.score,
     required this.date,
     this.difficulty,
+    this.settings,
   });
+
+  /// Key for grouping scores by settings combination.
+  String get settingsKey {
+    if (settings == null || settings!.isEmpty) {
+      // Fall back to difficulty for old entries
+      return difficulty ?? '';
+    }
+    final sorted = settings!.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    return sorted.map((e) => '${e.key}=${e.value}').join('|');
+  }
 
   Map<String, dynamic> toMap() => {
         'gameId': gameId,
         'score': score,
         'date': date.toIso8601String(),
         'difficulty': difficulty,
+        if (settings != null) 'settings': settings,
       };
 
   factory ScoreEntry.fromMap(Map<dynamic, dynamic> map) => ScoreEntry(
@@ -26,7 +40,52 @@ class ScoreEntry {
         score: map['score'] as int,
         date: DateTime.parse(map['date'] as String),
         difficulty: map['difficulty'] as String?,
+        settings: map['settings'] != null
+            ? (map['settings'] as Map).cast<String, String>()
+            : null,
       );
+}
+
+/// Human-readable label for a settings combination.
+String settingsLabel(String gameId, Map<String, String>? settings, String? difficulty) {
+  if (settings != null && settings.isNotEmpty) {
+    return settings.entries.map((e) => _formatValue(gameId, e.key, e.value)).join(' · ');
+  }
+  if (difficulty != null && difficulty.isNotEmpty) {
+    return _translateDifficulty(difficulty);
+  }
+  return 'Ohne Einstellungen';
+}
+
+String _translateDifficulty(String d) {
+  return switch (d) {
+    'easy' => 'Leicht',
+    'medium' => 'Mittel',
+    'hard' => 'Schwer',
+    'normal' => 'Normal',
+    _ => d,
+  };
+}
+
+String _formatValue(String gameId, String key, String value) {
+  return switch (key) {
+    'difficulty' => _translateDifficulty(value),
+    'mode' => switch (value) {
+        'classic' => 'Klassisch',
+        'chain' => 'Kette',
+        'computer' => 'Computer',
+        'puzzle' => 'Puzzle',
+        _ => value,
+      },
+    'grid' => 'Raster $value',
+    'preview' => '${value}ms',
+    'nLevel' => 'N=$value',
+    'speed' => '${value}ms',
+    'trials' => '$value Durchgänge',
+    'rounds' => '$value Runden',
+    'gridSize' => '${value}×$value',
+    _ => '$key: $value',
+  };
 }
 
 class ScoreService {
