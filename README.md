@@ -1,58 +1,48 @@
-# BrainTrainer
+# BrainTrainer — Kognitives Training
 
-Eine Gehirntraining-App mit Fokus auf kognitive Fähigkeiten wie Arbeitsgedächtnis, Aufmerksamkeit, kognitive Flexibilität und Verarbeitungsgeschwindigkeit.
+Eine Gehirntraining-App mit 11 Spielen für Arbeitsgedächtnis, Aufmerksamkeit, kognitive Flexibilität und Verarbeitungsgeschwindigkeit. Gebaut mit Flutter, vollständig offline.
 
-> **Hinweis:** Diese App wurde ausschließlich durch Vibe Coding mit [Claude Code](https://claude.com/claude-code) entwickelt. Der Entwickler selbst kann nicht programmieren — sämtlicher Code wurde vollständig von KI geschrieben.
+> Entwickelt durch Vibe Coding mit [Claude Code](https://claude.com/claude-code).
 
-## Spiele
+## Was kann BrainTrainer?
 
-### Mathe Trainer
-Kopfrechnen unter Zeitdruck (60 Sekunden). Zwei Modi: **Klassisch** (zufällige Aufgaben) und **Kette** (Ergebnis wird nächster Operand). Drei Schwierigkeitsstufen von einfacher Addition bis Division mit großen Zahlen.
+### Spiele (11)
 
-### Sudoku
-Klassisches 9x9 Logikrätsel. Prozedural generierte Rätsel mit garantiert eindeutiger Lösung. Notiz-Modus für Kandidaten, Fehlerhervorhebung bei leichteren Stufen. Drei Schwierigkeitsgrade.
+- **Mathe Trainer** — Kopfrechnen unter Zeitdruck (60s). Modi: Klassisch, Kette (Ergebnis = nächster Operand), Sequenz (Reihe fortsetzen). 3 Schwierigkeitsstufen.
+- **Sudoku** — Prozedural generiert mit garantiert eindeutiger Lösung. Notiz-Modus, Fehlerhervorhebung. Spielstand wird gespeichert.
+- **Paare Finden** — Memory mit 4×3 bis 5×6 Grid. Weniger Versuche = besser.
+- **N-Back** — Arbeitsgedächtnistest. Position erkennen, die N Schritte zurückliegt. N=1-4, einstellbare Geschwindigkeit.
+- **Muster Merken** — Visuelles Muster einprägen und nachtippen. Komplexität steigt pro Level. Ein Fehler = Game Over.
+- **Schulte-Tabelle** — Zahlen 1-N in Reihenfolge antippen. 3×3 bis 7×7 Grid. Gewertet wird die Zeit.
+- **Stroop-Test** — Farbwort in falscher Farbe — richtige Farbe auswählen. Schwerer Modus fragt zufällig nach Farbe oder Wortbedeutung.
+- **Task Switching** — Oben: Gerade/Ungerade. Unten: Größer/Kleiner 5. Position wechselt zufällig.
+- **WCST** — Karten nach unbekannter Regel sortieren. Regel wechselt ohne Vorwarnung nach einigen richtigen Antworten.
+- **Schach** — Puzzles lösen (Lichess) oder gegen KI spielen (Minimax mit Alpha-Beta-Pruning). 3 Schwierigkeitsgrade.
+- **Anagramme** — Buchstaben in richtige Reihenfolge bringen. 10 Wörter pro Runde, Zeitlimit. 4-13 Buchstaben je nach Schwierigkeit.
 
-### Paare Finden (Memory)
-Karten aufdecken und Paare finden. Raster von 4x3 (leicht) bis 5x6 (schwer). Gewertet wird die Anzahl der Versuche — weniger ist besser.
+### Statistik & Fortschritt
 
-### N-Back
-Standardisierter Arbeitsgedächtnistest. Eine Position wird auf einem Raster angezeigt — reagieren, wenn sie mit der Position von N Schritten zuvor übereinstimmt. N-Level 1–4, einstellbare Geschwindigkeit und Anzahl der Durchgänge.
+- Alle Ergebnisse lokal gespeichert (Hive)
+- Zeitfilter: Letzte Woche, Letzter Monat, Gesamt
+- Verlaufsgraphen pro Spiel (CustomPaint)
+- Gruppierung nach Einstellungen/Schwierigkeit
+- Best, Durchschnitt, Anzahl pro Kombination
+- JSON Export/Import mit Duplikat-Erkennung
 
-### Muster Merken (Pattern Memory)
-Visuelles Muster kurz einprägen, dann aus dem Gedächtnis nachtippen. Die Muster werden mit jedem Level komplexer. Ein Fehler beendet das Spiel.
+## Tech-Stack
 
-### Schulte-Tabelle
-Zahlen 1 bis N in einem Raster so schnell wie möglich der Reihe nach antippen. Rastergröße von 3x3 bis 7x7 einstellbar. Gewertet wird die benötigte Zeit.
+| Technologie | Zweck |
+|---|---|
+| Flutter + Dart | Framework |
+| Material Design 3 | UI mit Dynamic Colors (Material You) |
+| Hive CE | Lokale Datenspeicherung |
+| chess.dart | Schach-Logik |
 
-### Sequenz
-Eine Startzahl und eine Rechenregel merken, dann die nächsten Werte der Reihe eingeben. Drei Schwierigkeitsgrade mit unterschiedlichen Zahlenräumen und Regeln (inkl. Primzahlen auf Stufe Schwer).
+## Build
 
-### Stroop-Test
-Klassischer neuropsychologischer Test. Ein Farbwort wird in einer anderen Farbe angezeigt — die richtige Farbe (nicht das Wort) auswählen. Im schweren Modus wird zufällig nach Farbe oder Wortbedeutung gefragt.
+```bash
+flutter build apk --release
+```
 
-### Task Switching
-Kognitive Flexibilität trainieren. Oben: Gerade/Ungerade beurteilen. Unten: Größer/Kleiner als 5 beurteilen. Die Zahl wechselt zufällig die Position — schnelles Umschalten zwischen den Regeln ist gefragt.
-
-### WCST (Wisconsin Card Sorting Test)
-Karten nach einer unbekannten Regel sortieren (Farbe, Form oder Anzahl). Die Regel wechselt nach einigen richtigen Antworten ohne Vorwarnung. Misst kognitive Flexibilität und die Fähigkeit, aus Feedback zu lernen.
-
-### Schach
-Schachpuzzles lösen oder gegen den Computer spielen. KI basiert auf Minimax mit Alpha-Beta-Pruning. Drei Schwierigkeitsstufen.
-
-### Anagramme
-Buchstaben eines durcheinander gewürfelten Wortes in die richtige Reihenfolge bringen. Zeitlimit pro Wort. Wortlänge von 4 bis 13 Buchstaben je nach Schwierigkeit.
-
-## Statistik & Fortschritt
-
-- Alle Spielergebnisse werden lokal gespeichert
-- Statistik-Übersicht mit Filtermöglichkeit: Letzte Woche, Letzter Monat, Gesamtzeitraum
-- Verlaufsgraphen pro Spiel zeigen den Fortschritt über Zeit
-- Export und Import der Ergebnisse als JSON
-- Alle Daten zurücksetzen möglich
-
-## Technologie
-
-- Flutter mit Material Design 3 und Dynamic Colors (Material You)
-- Lokale Datenspeicherung mit Hive
-- Responsive Layouts für Smartphones und Tablets
-- Komplett in Deutsch
+Responsive: Smartphone (Drawer) und Tablet (Sidebar).
+Komplett in Deutsch. Kein Internet nötig.
