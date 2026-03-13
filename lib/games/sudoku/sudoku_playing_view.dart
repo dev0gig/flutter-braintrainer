@@ -51,17 +51,22 @@ class SudokuPlayingView extends StatelessWidget {
 
         // Grid
         Expanded(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: _buildGrid(colorScheme, textTheme),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final maxBoard = (constraints.biggest.shortestSide - 24).clamp(200.0, 600.0);
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: maxBoard),
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: _buildGrid(colorScheme, textTheme),
+                    ),
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ),
 
@@ -71,7 +76,7 @@ class SudokuPlayingView extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
+              constraints: const BoxConstraints(maxWidth: 500),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -189,13 +194,17 @@ class SudokuPlayingView extends StatelessWidget {
           ),
         ),
         child: value != 0
-            ? Center(
-                child: Text(
-                  '$value',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: isInitial ? FontWeight.bold : FontWeight.normal,
-                    color: textColor,
+            ? FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Text(
+                    '$value',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: isInitial ? FontWeight.bold : FontWeight.normal,
+                      color: textColor,
+                    ),
                   ),
                 ),
               )
@@ -216,11 +225,14 @@ class SudokuPlayingView extends StatelessWidget {
           final num = i + 1;
           return Center(
             child: cellNotes.contains(num)
-                ? Text(
-                    '$num',
-                    style: TextStyle(
-                      fontSize: 8,
-                      color: colorScheme.onSurfaceVariant,
+                ? FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '$num',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   )
                 : const SizedBox.shrink(),

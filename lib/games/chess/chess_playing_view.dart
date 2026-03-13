@@ -59,17 +59,22 @@ class ChessPlayingView extends StatelessWidget {
 
         // Board
         Expanded(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: _buildBoard(colorScheme),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final maxBoard = (constraints.biggest.shortestSide - 32).clamp(200.0, 600.0);
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: maxBoard),
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: _buildBoard(colorScheme),
+                    ),
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ),
 
@@ -225,21 +230,26 @@ class ChessPlayingView extends StatelessWidget {
           final isLegal = state.isLegal(square);
           final isLast = state.isLastMove(square);
 
+          final baseColor = isLight
+              ? const Color(0xFFF0D9B5)
+              : const Color(0xFFB58863);
+
           Color bgColor;
           if (isSelected) {
-            bgColor = colorScheme.primary.withValues(alpha: 0.35);
-          } else if (isLast) {
-            bgColor = colorScheme.primary.withValues(alpha: 0.2);
-          } else if (isLight) {
-            bgColor = const Color(0xFFF0D9B5);
+            bgColor = Color.lerp(baseColor, colorScheme.primary, 0.3)!;
           } else {
-            bgColor = const Color(0xFFB58863);
+            bgColor = baseColor;
           }
 
           return GestureDetector(
             onTap: () => state.onClick(square),
             child: Container(
-              color: bgColor,
+              decoration: BoxDecoration(
+                color: bgColor,
+                border: isLast
+                    ? Border.all(color: HSLColor.fromColor(colorScheme.primary).withSaturation(1.0).withLightness(0.5).toColor(), width: 3.5)
+                    : null,
+              ),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
