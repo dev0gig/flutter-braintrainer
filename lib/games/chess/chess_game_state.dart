@@ -45,6 +45,8 @@ class ChessGameState extends ChangeNotifier {
   int puzzleTotal = 0;
   String puzzleFeedback = '';
   String playerColor = 'w'; // 'w' or 'b'
+  String? hintSquare; // square highlighted by hint
+  bool solutionRevealed = false;
   final List<int> _usedPuzzleIndices = [];
 
   bool get isFlipped => playerColor == 'b';
@@ -210,6 +212,8 @@ class ChessGameState extends ChangeNotifier {
     currentPuzzle = puzzles[idx];
     puzzleStatus = 'playing';
     puzzleFeedback = '';
+    hintSquare = null;
+    solutionRevealed = false;
 
     chess = ch.Chess.fromFEN(currentPuzzle!.fen);
 
@@ -267,6 +271,7 @@ class ChessGameState extends ChangeNotifier {
 
     // Correct move
     puzzleFeedback = '';
+    hintSquare = null;
     final moveArgs = <String, String>{'from': from, 'to': to};
     if (promotion != null) moveArgs['promotion'] = promotion;
     final result = chess.move(moveArgs);
@@ -328,6 +333,40 @@ class ChessGameState extends ChangeNotifier {
         settings: {'mode': gameMode.name, 'category': puzzleCategory.name},
       ));
     }
+  }
+
+  void showHint() {
+    if (currentPuzzle == null || puzzleStatus != 'playing') return;
+    if (puzzleSolutionIndex >= currentPuzzle!.moves.length) return;
+    final uci = currentPuzzle!.moves[puzzleSolutionIndex];
+    hintSquare = uci.substring(0, 2);
+    notifyListeners();
+  }
+
+  void revealSolution() {
+    if (currentPuzzle == null || puzzleStatus != 'playing') return;
+    solutionRevealed = true;
+    hintSquare = null;
+
+    // Play all remaining solution moves
+    while (puzzleSolutionIndex < currentPuzzle!.moves.length) {
+      final uci = currentPuzzle!.moves[puzzleSolutionIndex];
+      final from = uci.substring(0, 2);
+      final to = uci.substring(2, 4);
+      final promo = uci.length > 4 ? uci[4] : null;
+      final moveArgs = <String, String>{'from': from, 'to': to};
+      if (promo != null) moveArgs['promotion'] = promo;
+      final result = chess.move(moveArgs);
+      if (result) lastMove = (from: from, to: to);
+      puzzleSolutionIndex++;
+    }
+
+    puzzleStatus = 'solved';
+    puzzleFeedback = 'solved';
+    selected = null;
+    legalTargets = [];
+    // No score increment — solution was revealed
+    notifyListeners();
   }
 
   void skipPuzzle() {
@@ -464,6 +503,8 @@ class ChessGameState extends ChangeNotifier {
     currentPuzzle = null;
     puzzleStatus = 'playing';
     puzzleFeedback = '';
+    hintSquare = null;
+    solutionRevealed = false;
     phase = ChessPhase.start;
     notifyListeners();
   }

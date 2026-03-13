@@ -43,17 +43,43 @@ class ChessPlayingView extends StatelessWidget {
           ),
         ),
 
-        // Puzzle rating badge
+        // Puzzle controls row + rating
         if (state.gameMode == ChessGameMode.puzzle &&
             state.currentPuzzle != null &&
             state.puzzleStatus == 'playing')
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: Text(
-              'Rating: ${state.currentPuzzle!.rating}',
-              style: textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton.icon(
+                      onPressed: state.showHint,
+                      icon: const Icon(Icons.lightbulb_outline, size: 18),
+                      label: const Text('Hinweis'),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton.icon(
+                      onPressed: state.revealSolution,
+                      icon: const Icon(Icons.visibility, size: 18),
+                      label: const Text('Lösung'),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: state.skipPuzzle,
+                      child: const Text('Überspringen'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Rating: ${state.currentPuzzle!.rating}',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ),
 
@@ -189,12 +215,7 @@ class ChessPlayingView extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (state.gameMode == ChessGameMode.puzzle)
-          TextButton(
-            onPressed: state.puzzleStatus == 'solved' ? null : state.skipPuzzle,
-            child: const Text('Überspringen'),
-          )
-        else
+        if (state.gameMode != ChessGameMode.puzzle)
           IconButton(
             onPressed: state.undo,
             icon: const Icon(Icons.undo),
@@ -229,13 +250,16 @@ class ChessPlayingView extends StatelessWidget {
           final isSelected = state.isSelected(square);
           final isLegal = state.isLegal(square);
           final isLast = state.isLastMove(square);
+          final isHint = state.hintSquare == square;
 
           final baseColor = isLight
               ? const Color(0xFFF0D9B5)
               : const Color(0xFFB58863);
 
           Color bgColor;
-          if (isSelected) {
+          if (isHint) {
+            bgColor = Color.lerp(baseColor, Colors.amber, 0.5)!;
+          } else if (isSelected) {
             bgColor = Color.lerp(baseColor, colorScheme.primary, 0.3)!;
           } else {
             bgColor = baseColor;
@@ -310,10 +334,15 @@ class ChessPlayingView extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         children: [
-          const Icon(Icons.check_circle, size: 48, color: Colors.green),
+          Icon(
+            state.solutionRevealed ? Icons.visibility : Icons.check_circle,
+            size: 48,
+            color: state.solutionRevealed ? Colors.orange : Colors.green,
+          ),
           const SizedBox(height: 8),
-          Text('Richtig!', style: textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold)),
+          Text(state.solutionRevealed ? 'Lösung' : 'Richtig!',
+              style: textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           Text('${state.puzzleScore} von ${state.puzzleTotal + 1} gelöst',
               style: textTheme.bodyMedium?.copyWith(
