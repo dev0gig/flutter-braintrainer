@@ -11,14 +11,12 @@ class AnagramResultView extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final ratio = state.score / state.totalRounds;
-
     IconData icon;
     Color iconColor;
-    if (ratio >= 0.8) {
+    if (state.score >= 8) {
       icon = Icons.emoji_events;
       iconColor = Colors.amber;
-    } else if (ratio >= 0.5) {
+    } else if (state.score >= 4) {
       icon = Icons.trending_up;
       iconColor = Colors.orange;
     } else {
@@ -68,7 +66,7 @@ class AnagramResultView extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'von ${state.totalRounds} Wörtern',
+                      'Wörter in 60s',
                       style: textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),

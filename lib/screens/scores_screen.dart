@@ -286,6 +286,7 @@ class _GameDetailSheetState extends State<_GameDetailSheet> {
                           scores: scores,
                           colorScheme: colorScheme,
                           scoreLabel: widget.game.scoreLabel,
+                          lowerIsBetter: widget.game.isLowerBetterFor(first.settings),
                         );
                       },
                     ),
@@ -304,17 +305,30 @@ class _SettingsSection extends StatelessWidget {
   final List<ScoreEntry> scores;
   final ColorScheme colorScheme;
   final String scoreLabel;
+  final bool lowerIsBetter;
 
   const _SettingsSection({
     required this.label,
     required this.scores,
     required this.colorScheme,
     required this.scoreLabel,
+    this.lowerIsBetter = false,
   });
+
+  static String _formatTime(int seconds) {
+    if (seconds >= 60) {
+      final m = seconds ~/ 60;
+      final s = seconds % 60;
+      return s > 0 ? '${m}m ${s}s' : '${m}m';
+    }
+    return '${seconds}s';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final best = scores.map((s) => s.score).reduce((a, b) => a > b ? a : b);
+    final best = scores.map((s) => s.score).reduce(
+      lowerIsBetter ? (a, b) => a < b ? a : b : (a, b) => a > b ? a : b,
+    );
     final avg = scores.map((s) => s.score).reduce((a, b) => a + b) / scores.length;
 
     return Card(
@@ -337,13 +351,15 @@ class _SettingsSection extends StatelessWidget {
               children: [
                 _StatItem(
                   label: 'Bester',
-                  value: '$best',
+                  value: lowerIsBetter ? _formatTime(best) : '$best',
                   colorScheme: colorScheme,
                 ),
                 const SizedBox(width: 16),
                 _StatItem(
                   label: 'Durchschnitt',
-                  value: avg.toStringAsFixed(1),
+                  value: lowerIsBetter
+                      ? _formatTime(avg.round())
+                      : avg.toStringAsFixed(1),
                   colorScheme: colorScheme,
                 ),
                 const SizedBox(width: 16),

@@ -49,8 +49,8 @@ class MathGameState extends ChangeNotifier {
   int sequenceStartNumber = 0;
   SequenceRule sequenceRule = const SequenceRule(operation: '+', value: 0);
   List<int> currentSequence = [];
-  int sequenceMaxRounds = 10;
   String sequenceInput = '';
+  int sequenceTimeLeft = 60;
 
   String get instructions {
     if (mode == MathMode.sequence) {
@@ -96,11 +96,6 @@ class MathGameState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void adjustSequenceRounds(int delta) {
-    sequenceMaxRounds = (sequenceMaxRounds + delta).clamp(10, 30);
-    notifyListeners();
-  }
-
   void startGame() {
     score = 0;
     userAnswer = '';
@@ -109,6 +104,7 @@ class MathGameState extends ChangeNotifier {
     if (mode == MathMode.sequence) {
       sequenceInput = '';
       currentSequence = [];
+      sequenceTimeLeft = 60;
       _generateSequenceData();
       phase = MathPhase.sequenceMemorize;
       notifyListeners();
@@ -117,6 +113,19 @@ class MathGameState extends ChangeNotifier {
       _timer = Timer(const Duration(seconds: 3), () {
         phase = MathPhase.sequenceInput;
         notifyListeners();
+
+        _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+          sequenceTimeLeft--;
+          if (sequenceTimeLeft <= 0) {
+            sequenceTimeLeft = 0;
+            phase = MathPhase.sequenceGameover;
+            _saveSequenceScore();
+            notifyListeners();
+            _stopTimer();
+          } else {
+            notifyListeners();
+          }
+        });
       });
       return;
     }
@@ -259,13 +268,8 @@ class MathGameState extends ChangeNotifier {
       score++;
       sequenceInput = '';
       notifyListeners();
-
-      if (score >= sequenceMaxRounds) {
-        phase = MathPhase.sequenceGameover;
-        _saveSequenceScore();
-        notifyListeners();
-      }
     } else {
+      _stopTimer();
       phase = MathPhase.sequenceGameover;
       _saveSequenceScore();
       notifyListeners();
@@ -307,7 +311,6 @@ class MathGameState extends ChangeNotifier {
       settings: {
         'difficulty': difficulty.name,
         'mode': 'sequence',
-        'rounds': '$sequenceMaxRounds',
       },
     ));
   }

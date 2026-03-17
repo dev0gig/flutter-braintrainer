@@ -28,15 +28,13 @@ class MemoryPlayingView extends StatelessWidget {
               ),
               const Spacer(),
               Icon(Icons.timer_outlined, size: 16,
-                color: state.remainingSeconds <= 10
-                  ? Colors.red : colorScheme.onSurfaceVariant),
+                color: colorScheme.onSurfaceVariant),
               const SizedBox(width: 4),
               Text(state.timerDisplay,
                 style: textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'monospace',
-                  color: state.remainingSeconds <= 10
-                    ? Colors.red : colorScheme.onSurfaceVariant)),
+                  color: colorScheme.onSurfaceVariant)),
               const SizedBox(width: 16),
               Text(
                 'Versuche: ',
@@ -262,8 +260,6 @@ class MemoryGameoverView extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final allMatched = state.matchedCount == state.totalPairs;
-
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -272,14 +268,14 @@ class MemoryGameoverView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                allMatched ? Icons.emoji_events : Icons.timer_off,
+              const Icon(
+                Icons.emoji_events,
                 size: 64,
-                color: allMatched ? Colors.amber : Colors.orange,
+                color: Colors.amber,
               ),
               const SizedBox(height: 12),
               Text(
-                allMatched ? 'Klasse!' : 'Zeit abgelaufen!',
+                'Klasse!',
                 style: textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -299,8 +295,8 @@ class MemoryGameoverView extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(child: _statBox(
-                          '${state.matchedCount}/${state.totalPairs}',
-                          'Paare gefunden',
+                          state.timerDisplay,
+                          'Zeit',
                           colorScheme,
                         )),
                         const SizedBox(width: 12),

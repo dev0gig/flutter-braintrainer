@@ -33,6 +33,7 @@ final List<GameDefinition> games = [
     description: 'Klassisches Schach',
     icon: Icons.castle,
     scoreLabel: 'Gelöste Puzzles',
+    isLowerBetterFn: (s) => s?['mode'] == 'computer',
     builder: () => const ChessScreen(),
   ),
   GameDefinition(
@@ -48,7 +49,8 @@ final List<GameDefinition> games = [
     name: 'Paare finden',
     description: 'Klassisches Memory',
     icon: Icons.style,
-    scoreLabel: 'Versuche',
+    scoreLabel: 'Zeit (s)',
+    lowerIsBetter: true,
     builder: () => const MemoryMatchScreen(),
   ),
   GameDefinition(
@@ -73,6 +75,7 @@ final List<GameDefinition> games = [
     description: 'Finde Zahlen in Reihenfolge',
     icon: Icons.apps,
     scoreLabel: 'Zeit (s)',
+    lowerIsBetter: true,
     builder: () => const SchulteTableScreen(),
   ),
   GameDefinition(
@@ -88,7 +91,8 @@ final List<GameDefinition> games = [
     name: 'Sudoku',
     description: 'Klassisches Zahlenrätsel',
     icon: Icons.grid_on,
-    scoreLabel: 'Abgeschlossen',
+    scoreLabel: 'Zeit (s)',
+    lowerIsBetter: true,
     builder: () => const SudokuScreen(),
   ),
   GameDefinition(

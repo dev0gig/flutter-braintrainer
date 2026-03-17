@@ -31,8 +31,6 @@ class AnagramGameState extends ChangeNotifier {
   GamePhase phase = GamePhase.start;
   AnswerFeedback feedback = AnswerFeedback.none;
   int score = 0;
-  int currentRound = 0;
-  final int totalRounds = 10;
   AnagramWord currentWord = const AnagramWord(word: '', hint: '');
   List<LetterTile> scrambledTiles = [];
   List<LetterTile?> guessedLetters = [];
@@ -49,17 +47,6 @@ class AnagramGameState extends ChangeNotifier {
         return '5–8 Buchstaben, Hinweis optional';
       case Difficulty.hard:
         return '7–13 Buchstaben, ohne Hinweis';
-    }
-  }
-
-  int get _timeForDifficulty {
-    switch (difficulty) {
-      case Difficulty.easy:
-        return 30;
-      case Difficulty.medium:
-        return 25;
-      case Difficulty.hard:
-        return 30;
     }
   }
 
@@ -81,11 +68,21 @@ class AnagramGameState extends ChangeNotifier {
 
   void startGame() {
     score = 0;
-    currentRound = 0;
     feedback = AnswerFeedback.none;
     showHint = false;
+    timeLeft = 60;
     phase = GamePhase.playing;
-    _nextWord();
+    _loadNextWord();
+    notifyListeners();
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      timeLeft--;
+      if (timeLeft <= 0) {
+        _finishGame();
+      } else {
+        notifyListeners();
+      }
+    });
   }
 
   void returnToStart() {
@@ -126,17 +123,12 @@ class AnagramGameState extends ChangeNotifier {
   }
 
   void skipWord() {
-    _stopTimer();
     feedback = AnswerFeedback.skipped;
     notifyListeners();
 
     Future.delayed(const Duration(milliseconds: 1500), () {
       feedback = AnswerFeedback.none;
-      if (currentRound >= totalRounds) {
-        _finishGame();
-      } else {
-        _nextWord();
-      }
+      _loadNextWord();
     });
   }
 
@@ -146,16 +138,11 @@ class AnagramGameState extends ChangeNotifier {
     if (word == currentWord.word) {
       feedback = AnswerFeedback.correct;
       score++;
-      _stopTimer();
       notifyListeners();
 
       Future.delayed(const Duration(milliseconds: 1000), () {
         feedback = AnswerFeedback.none;
-        if (currentRound >= totalRounds) {
-          _finishGame();
-        } else {
-          _nextWord();
-        }
+        _loadNextWord();
       });
     } else {
       feedback = AnswerFeedback.incorrect;
@@ -176,9 +163,7 @@ class AnagramGameState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _nextWord() {
-    _stopTimer();
-    currentRound++;
+  void _loadNextWord() {
     showHint = false;
 
     final pool = _wordPool;
@@ -199,33 +184,7 @@ class AnagramGameState extends ChangeNotifier {
 
     scrambledTiles = tiles;
     guessedLetters = List.filled(currentWord.word.length, null);
-
-    timeLeft = _timeForDifficulty;
     notifyListeners();
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      timeLeft--;
-      if (timeLeft <= 0) {
-        _onTimeUp();
-      } else {
-        notifyListeners();
-      }
-    });
-  }
-
-  void _onTimeUp() {
-    _stopTimer();
-    feedback = AnswerFeedback.skipped;
-    notifyListeners();
-
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      feedback = AnswerFeedback.none;
-      if (currentRound >= totalRounds) {
-        _finishGame();
-      } else {
-        _nextWord();
-      }
-    });
   }
 
   void _finishGame() {

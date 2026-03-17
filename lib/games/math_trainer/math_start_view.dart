@@ -38,7 +38,15 @@ class MathStartView extends StatelessWidget {
                   ),
                   children: state.mode == MathMode.sequence
                       ? [
-                          const TextSpan(text: 'Merke dir die Regel und führe die Sequenz fort.'),
+                          const TextSpan(text: 'Merke dir die Regel und führe die Sequenz fort in '),
+                          TextSpan(
+                            text: '60 Sekunden',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          const TextSpan(text: '.'),
                         ]
                       : [
                           const TextSpan(text: 'Löse so viele Rechenaufgaben wie möglich in '),
@@ -129,41 +137,6 @@ class MathStartView extends StatelessWidget {
                 ),
               ),
 
-              // Rounds setting (sequence mode only)
-              if (state.mode == MathMode.sequence) ...[
-                const SizedBox(height: 24),
-                Text(
-                  'ANZAHL SCHRITTE',
-                  style: textTheme.labelSmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: colorScheme.outlineVariant),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        onPressed: () => state.adjustSequenceRounds(-5),
-                        icon: const Icon(Icons.remove),
-                      ),
-                      Text('${state.sequenceMaxRounds}', style: textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold, fontFamily: 'monospace')),
-                      IconButton(
-                        onPressed: () => state.adjustSequenceRounds(5),
-                        icon: const Icon(Icons.add),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
               const SizedBox(height: 32),
 
               FilledButton(

@@ -29,18 +29,10 @@ class AnagramPlayingView extends StatelessWidget {
               // Timer
               _TimerChip(
                 timeLeft: state.timeLeft,
-                isWarning: state.timeLeft <= 5,
+                isWarning: state.timeLeft <= 10,
                 colorScheme: colorScheme,
               ),
               const Spacer(),
-              // Round
-              Text(
-                '${state.currentRound}/${state.totalRounds}',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(width: 16),
               // Score
               Row(
                 children: [

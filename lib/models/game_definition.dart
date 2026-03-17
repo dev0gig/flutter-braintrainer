@@ -7,6 +7,8 @@ class GameDefinition {
   final IconData icon;
   final Widget Function() builder;
   final String scoreLabel;
+  final bool lowerIsBetter;
+  final bool Function(Map<String, String>? settings)? isLowerBetterFn;
 
   const GameDefinition({
     required this.id,
@@ -15,5 +17,12 @@ class GameDefinition {
     required this.icon,
     required this.builder,
     this.scoreLabel = 'Punkte',
+    this.lowerIsBetter = false,
+    this.isLowerBetterFn,
   });
+
+  bool isLowerBetterFor(Map<String, String>? settings) {
+    if (isLowerBetterFn != null) return isLowerBetterFn!(settings);
+    return lowerIsBetter;
+  }
 }

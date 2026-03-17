@@ -31,7 +31,7 @@ class MemoryStartView extends StatelessWidget {
               )),
               const SizedBox(height: 8),
               Text(
-                'Finde alle Paare mit so wenigen Versuchen wie möglich.',
+                'Finde alle Paare so schnell wie möglich.',
                 style: textTheme.bodyLarge?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),

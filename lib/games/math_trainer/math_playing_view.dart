@@ -239,6 +239,26 @@ class SequenceInputView extends StatelessWidget {
                 tooltip: 'Abbrechen',
               ),
               const Spacer(),
+              Icon(
+                Icons.timer,
+                size: 20,
+                color: state.sequenceTimeLeft <= 10
+                    ? colorScheme.error
+                    : colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '${state.sequenceTimeLeft}s',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  color: state.sequenceTimeLeft <= 10
+                      ? colorScheme.error
+                      : colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(width: 24),
               Text('Schritte: ', style: textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant)),
               Text('${state.score}', style: textTheme.bodyMedium?.copyWith(
@@ -311,7 +331,7 @@ class SequenceGameoverView extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final won = state.score >= state.sequenceMaxRounds;
+    final timedOut = state.sequenceTimeLeft <= 0;
 
     return Center(
       child: SingleChildScrollView(
@@ -322,22 +342,15 @@ class SequenceGameoverView extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                won ? Icons.emoji_events : Icons.error_outline,
+                timedOut ? Icons.timer_off : Icons.error_outline,
                 size: 64,
-                color: won ? Colors.amber : Colors.red,
+                color: timedOut ? Colors.orange : Colors.red,
               ),
               const SizedBox(height: 16),
               Text(
-                won ? 'Geschafft!' : 'Falsch!',
+                timedOut ? 'Zeit abgelaufen!' : 'Falsch!',
                 style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
-              if (won) ...[
-                const SizedBox(height: 8),
-                Text('Du hast alle ${state.sequenceMaxRounds} Schritte gemeistert.',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant),
-                  textAlign: TextAlign.center),
-              ],
               const SizedBox(height: 24),
 
               Container(
@@ -350,10 +363,10 @@ class SequenceGameoverView extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Text('Erreichte Sequenz', style: textTheme.bodySmall?.copyWith(
+                    Text('Erreichte Schritte', style: textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurfaceVariant)),
                     const SizedBox(height: 4),
-                    Text('${state.score} / ${state.sequenceMaxRounds}',
+                    Text('${state.score}',
                       style: textTheme.titleLarge?.copyWith(
                         fontFamily: 'monospace', color: colorScheme.primary,
                         fontWeight: FontWeight.bold)),
