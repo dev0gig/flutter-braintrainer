@@ -41,6 +41,11 @@ class SwitchingGameState extends ChangeNotifier {
   bool showNumber = false;
   bool waitingForInput = false;
 
+  // Countdown timer
+  static const int totalSeconds = 60;
+  int remainingSeconds = totalSeconds;
+  Timer? _countdownTimer;
+
   // Feedback: null = none
   bool? feedback;
 
@@ -106,6 +111,12 @@ class SwitchingGameState extends ChangeNotifier {
     notifyListeners();
   }
 
+  String get timerDisplay {
+    final m = remainingSeconds ~/ 60;
+    final s = remainingSeconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
   void startGame() {
     _results.clear();
     _previousPosition = null;
@@ -113,8 +124,18 @@ class SwitchingGameState extends ChangeNotifier {
     feedback = null;
     showNumber = false;
     waitingForInput = false;
+    remainingSeconds = totalSeconds;
     phase = SwitchPhase.playing;
     notifyListeners();
+
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      remainingSeconds--;
+      if (remainingSeconds <= 0) {
+        remainingSeconds = 0;
+        _endGame();
+      }
+      notifyListeners();
+    });
 
     _nextTrialTimer = Timer(const Duration(milliseconds: 600), _nextTrial);
   }
@@ -195,12 +216,13 @@ class SwitchingGameState extends ChangeNotifier {
       gameId: 'switching-task',
       score: score,
       date: DateTime.now(),
-      settings: {'trials': '$totalTrials'},
+      settings: {'trials': '$totalTrials', 'timeLimit': '$totalSeconds'},
     ));
     notifyListeners();
   }
 
   void _cleanup() {
+    _countdownTimer?.cancel();
     _feedbackTimer?.cancel();
     _nextTrialTimer?.cancel();
     showNumber = false;

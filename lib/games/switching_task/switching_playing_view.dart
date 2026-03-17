@@ -29,6 +29,17 @@ class SwitchingPlayingView extends StatelessWidget {
                 tooltip: 'Abbrechen',
               ),
               const Spacer(),
+              Icon(Icons.timer_outlined, size: 16,
+                color: state.remainingSeconds <= 10
+                  ? Colors.red : colorScheme.onSurfaceVariant),
+              const SizedBox(width: 4),
+              Text(state.timerDisplay,
+                style: textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'monospace',
+                  color: state.remainingSeconds <= 10
+                    ? Colors.red : colorScheme.onSurfaceVariant)),
+              const SizedBox(width: 16),
               Text('${state.currentTrial}/${state.totalTrials} ',
                 style: textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant, fontFamily: 'monospace')),

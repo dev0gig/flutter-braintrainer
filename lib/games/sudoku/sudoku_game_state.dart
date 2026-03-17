@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -108,6 +109,29 @@ class SudokuGameState extends ChangeNotifier {
   bool isNoteMode = false;
   bool isComplete = false;
 
+  // Stopwatch
+  int elapsedSeconds = 0;
+  Timer? _stopwatchTimer;
+
+  String get elapsedFormatted {
+    final m = elapsedSeconds ~/ 60;
+    final s = elapsedSeconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
+  void _startStopwatch() {
+    _stopwatchTimer?.cancel();
+    _stopwatchTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      elapsedSeconds++;
+      notifyListeners();
+    });
+  }
+
+  void _stopStopwatch() {
+    _stopwatchTimer?.cancel();
+    _stopwatchTimer = null;
+  }
+
   String get difficultyLabel {
     switch (difficulty) {
       case SudokuDifficulty.easy:
@@ -127,6 +151,8 @@ class SudokuGameState extends ChangeNotifier {
     isNoteMode = false;
     selectedCell = null;
     notes = List.generate(81, (_) => []);
+    elapsedSeconds = 0;
+    _stopStopwatch();
     isGenerating = true;
     notifyListeners();
 
@@ -137,11 +163,13 @@ class SudokuGameState extends ChangeNotifier {
 
     isGenerating = false;
     phase = SudokuPhase.playing;
+    _startStopwatch();
     notifyListeners();
     _saveState();
   }
 
   void returnToStart() {
+    _stopStopwatch();
     phase = SudokuPhase.start;
     notifyListeners();
   }
@@ -158,10 +186,12 @@ class SudokuGameState extends ChangeNotifier {
         .toList();
     difficulty = SudokuDifficulty.values.byName(data['difficulty'] as String);
     isNoteMode = data['isNoteMode'] as bool;
+    elapsedSeconds = (data['elapsedSeconds'] as int?) ?? 0;
     isComplete = false;
     selectedCell = null;
     isGenerating = false;
     phase = SudokuPhase.playing;
+    _startStopwatch();
     notifyListeners();
     return true;
   }
@@ -175,6 +205,7 @@ class SudokuGameState extends ChangeNotifier {
       'notes': notes,
       'difficulty': difficulty.name,
       'isNoteMode': isNoteMode,
+      'elapsedSeconds': elapsedSeconds,
     });
   }
 
@@ -270,14 +301,23 @@ class SudokuGameState extends ChangeNotifier {
       if (grid[i] != solution[i]) return;
     }
     isComplete = true;
+    _stopStopwatch();
     GameStateService.clearState('sudoku');
     ScoreService.saveScore(ScoreEntry(
       gameId: 'sudoku',
-      score: 1,
+      score: elapsedSeconds,
       date: DateTime.now(),
       difficulty: difficulty.name,
-      settings: {'difficulty': difficulty.name},
+      settings: {
+        'difficulty': difficulty.name,
+        'elapsedSeconds': '$elapsedSeconds',
+      },
     ));
   }
 
+  @override
+  void dispose() {
+    _stopStopwatch();
+    super.dispose();
+  }
 }

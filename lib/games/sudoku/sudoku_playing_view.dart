@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import 'sudoku_game_state.dart';
@@ -33,7 +35,14 @@ class SudokuPlayingView extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              const SizedBox(width: 48),
+              Text(
+                state.elapsedFormatted,
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontFeatures: [const FontFeature.tabularFigures()],
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
             ],
           ),
         ),
@@ -43,7 +52,8 @@ class SudokuPlayingView extends StatelessWidget {
           height: 28,
           child: Center(
             child: state.isComplete
-                ? Text('Rätsel gelöst!', style: textTheme.bodyLarge?.copyWith(
+                ? Text('Rätsel gelöst! (${state.elapsedFormatted})',
+                    style: textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.bold, color: Colors.green))
                 : const SizedBox.shrink(),
           ),

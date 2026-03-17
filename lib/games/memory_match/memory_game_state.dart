@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -10,7 +11,7 @@ enum MemoryDifficulty {
   hard,   // 5x6 = 15 pairs
 }
 
-enum MemoryPhase { start, playing }
+enum MemoryPhase { start, playing, gameover }
 
 class MemoryCard {
   final int id;
@@ -43,6 +44,21 @@ class MemoryGameState extends ChangeNotifier {
   int attempts = 0;
   bool _isChecking = false;
 
+  // Countdown timer
+  int remainingSeconds = 60;
+  Timer? _countdownTimer;
+
+  int get totalSeconds {
+    switch (difficulty) {
+      case MemoryDifficulty.easy:
+        return 60;
+      case MemoryDifficulty.medium:
+        return 90;
+      case MemoryDifficulty.hard:
+        return 120;
+    }
+  }
+
   int get totalPairs {
     switch (difficulty) {
       case MemoryDifficulty.easy:
@@ -72,23 +88,41 @@ class MemoryGameState extends ChangeNotifier {
     notifyListeners();
   }
 
+  String get timerDisplay {
+    final m = remainingSeconds ~/ 60;
+    final s = remainingSeconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
   void startGame() {
     attempts = 0;
     matchedCount = 0;
     _flippedIndices = [];
     _isChecking = false;
+    remainingSeconds = totalSeconds;
     _generateCards();
     phase = MemoryPhase.playing;
     notifyListeners();
+
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      remainingSeconds--;
+      if (remainingSeconds <= 0) {
+        remainingSeconds = 0;
+        _endGame();
+      }
+      notifyListeners();
+    });
   }
 
   void returnToStart() {
+    _countdownTimer?.cancel();
     phase = MemoryPhase.start;
     notifyListeners();
   }
 
   void onCardTap(int index) {
-    if (_isChecking ||
+    if (phase != MemoryPhase.playing ||
+        _isChecking ||
         _flippedIndices.length >= 2 ||
         cards[index].isFlipped ||
         cards[index].isMatched) {
@@ -119,13 +153,7 @@ class MemoryGameState extends ChangeNotifier {
         _flippedIndices = [];
         _isChecking = false;
         if (isWon) {
-          ScoreService.saveScore(ScoreEntry(
-            gameId: 'memory-cards',
-            score: attempts,
-            date: DateTime.now(),
-            difficulty: difficulty.name,
-            settings: {'difficulty': difficulty.name},
-          ));
+          _endGame();
         }
         notifyListeners();
       });
@@ -139,6 +167,25 @@ class MemoryGameState extends ChangeNotifier {
         notifyListeners();
       });
     }
+  }
+
+  void _endGame() {
+    _countdownTimer?.cancel();
+    _isChecking = false;
+    phase = MemoryPhase.gameover;
+    ScoreService.saveScore(ScoreEntry(
+      gameId: 'memory-cards',
+      score: attempts,
+      date: DateTime.now(),
+      difficulty: difficulty.name,
+      settings: {
+        'difficulty': difficulty.name,
+        'timeLimit': '$totalSeconds',
+        'matchedPairs': '$matchedCount',
+        'totalPairs': '$totalPairs',
+      },
+    ));
+    notifyListeners();
   }
 
   void _generateCards() {

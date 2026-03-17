@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -50,6 +51,11 @@ class StroopGameState extends ChangeNotifier {
   int correctCount = 0;
   StroopRound? round;
 
+  // Countdown timer
+  static const int totalSeconds = 60;
+  int remainingSeconds = totalSeconds;
+  Timer? _countdownTimer;
+
   // Feedback state: null = no feedback, true = correct, false = wrong
   bool? feedback;
   int? selectedIndex;
@@ -64,17 +70,34 @@ class StroopGameState extends ChangeNotifier {
     notifyListeners();
   }
 
+  String get timerDisplay {
+    final m = remainingSeconds ~/ 60;
+    final s = remainingSeconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
   void startGame() {
     currentRound = 0;
     correctCount = 0;
     feedback = null;
     selectedIndex = null;
+    remainingSeconds = totalSeconds;
     phase = StroopPhase.playing;
     _generateRound();
     notifyListeners();
+
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      remainingSeconds--;
+      if (remainingSeconds <= 0) {
+        remainingSeconds = 0;
+        _endGame();
+      }
+      notifyListeners();
+    });
   }
 
   void returnToStart() {
+    _countdownTimer?.cancel();
     phase = StroopPhase.start;
     notifyListeners();
   }
@@ -91,21 +114,29 @@ class StroopGameState extends ChangeNotifier {
     Future.delayed(const Duration(milliseconds: 300), () {
       currentRound++;
       if (currentRound >= maxRounds) {
-        phase = StroopPhase.gameover;
-        ScoreService.saveScore(ScoreEntry(
-          gameId: 'stroop-test',
-          score: correctCount,
-          date: DateTime.now(),
-          difficulty: difficulty.name,
-          settings: {'difficulty': difficulty.name, 'rounds': '$maxRounds'},
-        ));
+        _endGame();
       } else {
         _generateRound();
+        feedback = null;
+        selectedIndex = null;
+        notifyListeners();
       }
-      feedback = null;
-      selectedIndex = null;
-      notifyListeners();
     });
+  }
+
+  void _endGame() {
+    _countdownTimer?.cancel();
+    feedback = null;
+    selectedIndex = null;
+    phase = StroopPhase.gameover;
+    ScoreService.saveScore(ScoreEntry(
+      gameId: 'stroop-test',
+      score: correctCount,
+      date: DateTime.now(),
+      difficulty: difficulty.name,
+      settings: {'difficulty': difficulty.name, 'rounds': '$maxRounds', 'timeLimit': '$totalSeconds'},
+    ));
+    notifyListeners();
   }
 
   void _generateRound() {
@@ -162,5 +193,11 @@ class StroopGameState extends ChangeNotifier {
       options: options,
       askForColor: askForColor,
     );
+  }
+
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
   }
 }

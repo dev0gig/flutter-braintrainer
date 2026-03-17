@@ -27,6 +27,7 @@ class _MemoryMatchScreenState extends State<MemoryMatchScreen> {
   @override
   void dispose() {
     _state.removeListener(_onStateChanged);
+    _state.dispose();
     super.dispose();
   }
 
@@ -37,6 +38,8 @@ class _MemoryMatchScreenState extends State<MemoryMatchScreen> {
         return MemoryStartView(state: _state);
       case MemoryPhase.playing:
         return MemoryPlayingView(state: _state);
+      case MemoryPhase.gameover:
+        return MemoryGameoverView(state: _state);
     }
   }
 }

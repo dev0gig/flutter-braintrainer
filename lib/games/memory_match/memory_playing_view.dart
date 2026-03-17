@@ -27,15 +27,17 @@ class MemoryPlayingView extends StatelessWidget {
                 tooltip: 'Abbrechen',
               ),
               const Spacer(),
-              if (state.isWon)
-                Text(
-                  'Gewonnen!',
-                  style: textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
-                ),
-              if (state.isWon) const SizedBox(width: 16),
+              Icon(Icons.timer_outlined, size: 16,
+                color: state.remainingSeconds <= 10
+                  ? Colors.red : colorScheme.onSurfaceVariant),
+              const SizedBox(width: 4),
+              Text(state.timerDisplay,
+                style: textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'monospace',
+                  color: state.remainingSeconds <= 10
+                    ? Colors.red : colorScheme.onSurfaceVariant)),
+              const SizedBox(width: 16),
               Text(
                 'Versuche: ',
                 style: textTheme.bodySmall?.copyWith(
@@ -80,50 +82,6 @@ class MemoryPlayingView extends StatelessWidget {
           ),
         ),
 
-        // Win state
-        if (state.isWon)
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Klasse!',
-                    style: textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${state.attempts} Versuche',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  FilledButton.icon(
-                    onPressed: state.startGame,
-                    icon: const Icon(Icons.replay),
-                    label: const Text('Nochmal spielen'),
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 48),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  OutlinedButton(
-                    onPressed: state.returnToStart,
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 44),
-                    ),
-                    child: const Text('Zurück zum Menü'),
-                  ),
-                ],
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -290,6 +248,111 @@ class _MemoryCardWidgetState extends State<_MemoryCardWidget>
           fontSize: 28,
           color: cs.onSurface,
         ),
+      ),
+    );
+  }
+}
+
+class MemoryGameoverView extends StatelessWidget {
+  final MemoryGameState state;
+
+  const MemoryGameoverView({super.key, required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final allMatched = state.matchedCount == state.totalPairs;
+
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                allMatched ? Icons.emoji_events : Icons.timer_off,
+                size: 64,
+                color: allMatched ? Colors.amber : Colors.orange,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                allMatched ? 'Klasse!' : 'Zeit abgelaufen!',
+                style: textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: colorScheme.outlineVariant),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: _statBox(
+                          '${state.matchedCount}/${state.totalPairs}',
+                          'Paare gefunden',
+                          colorScheme,
+                        )),
+                        const SizedBox(width: 12),
+                        Expanded(child: _statBox(
+                          '${state.attempts}',
+                          'Versuche',
+                          colorScheme,
+                        )),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              FilledButton.icon(
+                onPressed: state.startGame,
+                icon: const Icon(Icons.replay),
+                label: const Text('Nochmal spielen'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                ),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: state.returnToStart,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                ),
+                child: const Text('Zurück zum Menü'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _statBox(String value, String label, ColorScheme cs) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(value, style: TextStyle(
+            fontSize: 24, fontWeight: FontWeight.bold, color: cs.primary)),
+          const SizedBox(height: 2),
+          Text(label, style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant)),
+        ],
       ),
     );
   }

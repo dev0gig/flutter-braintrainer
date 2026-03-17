@@ -47,6 +47,11 @@ class WcstGameState extends ChangeNotifier {
   // null = none, true = correct, false = incorrect
   bool? feedback;
 
+  // Countdown timer
+  static const int totalSeconds = 120;
+  int remainingSeconds = totalSeconds;
+  Timer? _countdownTimer;
+
   int cardsPlayed = 0;
   int correctCount = 0;
   int errorCount = 0;
@@ -76,6 +81,12 @@ class WcstGameState extends ChangeNotifier {
     return 'Weiter üben';
   }
 
+  String get timerDisplay {
+    final m = remainingSeconds ~/ 60;
+    final s = remainingSeconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
   void startGame() {
     cardsPlayed = 0;
     correctCount = 0;
@@ -85,6 +96,7 @@ class WcstGameState extends ChangeNotifier {
     _currentStreak = 0;
     feedback = null;
     _previousRule = null;
+    remainingSeconds = totalSeconds;
 
     _ruleOrder = _generateRuleOrder();
     _ruleIndex = 0;
@@ -94,9 +106,19 @@ class WcstGameState extends ChangeNotifier {
     phase = WcstPhase.playing;
     _generateCard();
     notifyListeners();
+
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      remainingSeconds--;
+      if (remainingSeconds <= 0) {
+        remainingSeconds = 0;
+        _endGame();
+      }
+      notifyListeners();
+    });
   }
 
   void returnToStart() {
+    _countdownTimer?.cancel();
     _feedbackTimer?.cancel();
     phase = WcstPhase.start;
     notifyListeners();
@@ -153,13 +175,7 @@ class WcstGameState extends ChangeNotifier {
     _feedbackTimer = Timer(const Duration(milliseconds: 600), () {
       feedback = null;
       if (cardsPlayed >= totalCards) {
-        phase = WcstPhase.result;
-        ScoreService.saveScore(ScoreEntry(
-          gameId: 'wcst',
-          score: accuracy,
-          date: DateTime.now(),
-          settings: {},
-        ));
+        _endGame();
       } else {
         _generateCard();
       }
@@ -212,8 +228,22 @@ class WcstGameState extends ChangeNotifier {
 
   int _nextThreshold() => _random.nextInt(3) + 4;
 
+  void _endGame() {
+    _countdownTimer?.cancel();
+    _feedbackTimer?.cancel();
+    phase = WcstPhase.result;
+    ScoreService.saveScore(ScoreEntry(
+      gameId: 'wcst',
+      score: accuracy,
+      date: DateTime.now(),
+      settings: {'timeLimit': '$totalSeconds'},
+    ));
+    notifyListeners();
+  }
+
   @override
   void dispose() {
+    _countdownTimer?.cancel();
     _feedbackTimer?.cancel();
     super.dispose();
   }

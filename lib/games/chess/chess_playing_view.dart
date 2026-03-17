@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
@@ -38,6 +40,15 @@ class ChessPlayingView extends StatelessWidget {
               const Spacer(),
               _buildStatusText(colorScheme, textTheme),
               const Spacer(),
+              Text(
+                state.elapsedFormatted,
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontFeatures: [const FontFeature.tabularFigures()],
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(width: 4),
               _buildControls(colorScheme),
             ],
           ),
@@ -344,7 +355,7 @@ class ChessPlayingView extends StatelessWidget {
               style: textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text('${state.puzzleScore} von ${state.puzzleTotal + 1} gelöst',
+          Text('${state.puzzleScore} von ${state.puzzleTotal + 1} gelöst  (${state.elapsedFormatted})',
               style: textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant)),
           const SizedBox(height: 12),
@@ -376,6 +387,10 @@ class ChessPlayingView extends StatelessWidget {
           const SizedBox(height: 8),
           Text(state.status, style: textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text('Zeit: ${state.elapsedFormatted}',
+              style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant)),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,

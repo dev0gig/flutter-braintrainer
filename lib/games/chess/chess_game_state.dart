@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:chess/chess.dart' as ch;
@@ -48,6 +49,29 @@ class ChessGameState extends ChangeNotifier {
   String? hintSquare; // square highlighted by hint
   bool solutionRevealed = false;
   final List<int> _usedPuzzleIndices = [];
+
+  // Stopwatch
+  int elapsedSeconds = 0;
+  Timer? _stopwatchTimer;
+
+  String get elapsedFormatted {
+    final m = elapsedSeconds ~/ 60;
+    final s = elapsedSeconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
+  void _startStopwatch() {
+    _stopwatchTimer?.cancel();
+    _stopwatchTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      elapsedSeconds++;
+      notifyListeners();
+    });
+  }
+
+  void _stopStopwatch() {
+    _stopwatchTimer?.cancel();
+    _stopwatchTimer = null;
+  }
 
   bool get isFlipped => playerColor == 'b';
 
@@ -150,7 +174,9 @@ class ChessGameState extends ChangeNotifier {
         _computerMove();
         thinking = false;
         if (chess.game_over) {
+          _stopStopwatch();
           GameStateService.clearState('chess');
+          _saveComputerScore();
         } else {
           _saveState();
         }
@@ -159,7 +185,9 @@ class ChessGameState extends ChangeNotifier {
       return;
     }
     if (chess.game_over) {
+      _stopStopwatch();
       GameStateService.clearState('chess');
+      _saveComputerScore();
     } else {
       _saveState();
     }
@@ -192,6 +220,20 @@ class ChessGameState extends ChangeNotifier {
     } else {
       status = '';
     }
+  }
+
+  void _saveComputerScore() {
+    ScoreService.saveScore(ScoreEntry(
+      gameId: 'chess',
+      score: elapsedSeconds,
+      date: DateTime.now(),
+      difficulty: difficulty.name,
+      settings: {
+        'mode': gameMode.name,
+        'difficulty': difficulty.name,
+        'elapsedSeconds': '$elapsedSeconds',
+      },
+    ));
   }
 
   // --- Puzzle mode ---
@@ -239,6 +281,8 @@ class ChessGameState extends ChangeNotifier {
   void nextPuzzle() {
     puzzleTotal++;
     _loadPuzzle();
+    elapsedSeconds = 0;
+    _startStopwatch();
     notifyListeners();
   }
 
@@ -285,12 +329,17 @@ class ChessGameState extends ChangeNotifier {
       puzzleStatus = 'solved';
       puzzleScore++;
       puzzleFeedback = 'solved';
+      _stopStopwatch();
       ScoreService.saveScore(ScoreEntry(
         gameId: 'chess',
         score: puzzleScore,
         date: DateTime.now(),
         difficulty: puzzleCategory.name,
-        settings: {'mode': gameMode.name, 'category': puzzleCategory.name},
+        settings: {
+          'mode': gameMode.name,
+          'category': puzzleCategory.name,
+          'elapsedSeconds': '$elapsedSeconds',
+        },
       ));
       notifyListeners();
       return;
@@ -325,12 +374,17 @@ class ChessGameState extends ChangeNotifier {
       puzzleStatus = 'solved';
       puzzleScore++;
       puzzleFeedback = 'solved';
+      _stopStopwatch();
       ScoreService.saveScore(ScoreEntry(
         gameId: 'chess',
         score: puzzleScore,
         date: DateTime.now(),
         difficulty: puzzleCategory.name,
-        settings: {'mode': gameMode.name, 'category': puzzleCategory.name},
+        settings: {
+          'mode': gameMode.name,
+          'category': puzzleCategory.name,
+          'elapsedSeconds': '$elapsedSeconds',
+        },
       ));
     }
   }
@@ -479,6 +533,8 @@ class ChessGameState extends ChangeNotifier {
     status = '';
     thinking = false;
     playerColor = 'w';
+    elapsedSeconds = 0;
+    _stopStopwatch();
     phase = ChessPhase.playing;
 
     if (gameMode == ChessGameMode.puzzle) {
@@ -488,11 +544,13 @@ class ChessGameState extends ChangeNotifier {
       _puzzleData ??= await loadPuzzles();
       _loadPuzzle();
     }
+    _startStopwatch();
     notifyListeners();
     _saveState();
   }
 
   void returnToStart() {
+    _stopStopwatch();
     chess = ch.Chess();
     selected = null;
     legalTargets = [];
@@ -517,6 +575,7 @@ class ChessGameState extends ChangeNotifier {
     difficulty = ChessDifficulty.values.byName(data['difficulty'] as String);
     gameMode = ChessGameMode.computer;
     playerColor = data['playerColor'] as String;
+    elapsedSeconds = (data['elapsedSeconds'] as int?) ?? 0;
     if (data['lastMoveFrom'] != null) {
       lastMove = (from: data['lastMoveFrom'] as String, to: data['lastMoveTo'] as String);
     } else {
@@ -527,6 +586,7 @@ class ChessGameState extends ChangeNotifier {
     thinking = false;
     _updateStatus();
     phase = ChessPhase.playing;
+    _startStopwatch();
     notifyListeners();
     return true;
   }
@@ -538,6 +598,7 @@ class ChessGameState extends ChangeNotifier {
       'fen': chess.fen,
       'difficulty': difficulty.name,
       'playerColor': playerColor,
+      'elapsedSeconds': elapsedSeconds,
       if (lastMove != null) 'lastMoveFrom': lastMove!.from,
       if (lastMove != null) 'lastMoveTo': lastMove!.to,
     });
@@ -556,5 +617,11 @@ class ChessGameState extends ChangeNotifier {
   void setPuzzleCategory(PuzzleCategory c) {
     puzzleCategory = c;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _stopStopwatch();
+    super.dispose();
   }
 }
