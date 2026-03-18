@@ -287,26 +287,28 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const Divider(),
         Expanded(
-          child: ListView.builder(
-            itemCount: games.length,
-            itemBuilder: (context, index) {
-              final game = games[index];
-              final isSelected = index == _selectedIndex;
-              return ListTile(
-                leading: Icon(game.icon),
-                title: Text(game.name),
-                subtitle: Text(
-                  game.description,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                ),
-                selected: isSelected,
-                selectedTileColor:
-                    colorScheme.primaryContainer.withValues(alpha: 0.3),
-                onTap: () => _selectGame(index, closeDrawer: isDrawer),
-              );
-            },
+          child: ClipRect(
+            child: ListView.builder(
+              itemCount: games.length,
+              itemBuilder: (context, index) {
+                final game = games[index];
+                final isSelected = index == _selectedIndex;
+                return ListTile(
+                  leading: Icon(game.icon),
+                  title: Text(game.name),
+                  subtitle: Text(
+                    game.description,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                  selected: isSelected,
+                  selectedTileColor:
+                      colorScheme.primaryContainer.withValues(alpha: 0.3),
+                  onTap: () => _selectGame(index, closeDrawer: isDrawer),
+                );
+              },
+            ),
           ),
         ),
         const Divider(),
