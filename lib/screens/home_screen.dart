@@ -267,13 +267,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildSidebarContent({bool isDrawer = true}) {
     final colorScheme = Theme.of(context).colorScheme;
     final sidebarBg = colorScheme.surfaceContainerLow;
+    final safePadding = MediaQuery.of(context).padding;
 
     return Column(
       children: [
         ColoredBox(
           color: sidebarBg,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: EdgeInsets.fromLTRB(16, safePadding.top + 16, 16, 8),
             child: Row(
               children: [
                 Icon(Icons.psychology_alt, color: colorScheme.primary),
@@ -296,28 +297,32 @@ class _HomeScreenState extends State<HomeScreen> {
               context: context,
               removeTop: true,
               removeBottom: true,
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                clipBehavior: Clip.hardEdge,
-                itemCount: games.length,
-                itemBuilder: (context, index) {
-                  final game = games[index];
-                  final isSelected = index == _selectedIndex;
-                  return ListTile(
-                    leading: Icon(game.icon),
-                    title: Text(game.name),
-                    subtitle: Text(
-                      game.description,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                    ),
-                    selected: isSelected,
-                    selectedTileColor:
-                        colorScheme.primaryContainer.withValues(alpha: 0.3),
-                    onTap: () => _selectGame(index, closeDrawer: isDrawer),
-                  );
-                },
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(context).copyWith(overscroll: false),
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  clipBehavior: Clip.hardEdge,
+                  physics: const ClampingScrollPhysics(),
+                  itemCount: games.length,
+                  itemBuilder: (context, index) {
+                    final game = games[index];
+                    final isSelected = index == _selectedIndex;
+                    return ListTile(
+                      leading: Icon(game.icon),
+                      title: Text(game.name),
+                      subtitle: Text(
+                        game.description,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                      ),
+                      selected: isSelected,
+                      selectedTileColor:
+                          colorScheme.primaryContainer.withValues(alpha: 0.3),
+                      onTap: () => _selectGame(index, closeDrawer: isDrawer),
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -325,13 +330,16 @@ class _HomeScreenState extends State<HomeScreen> {
         Divider(height: 1, thickness: 1, color: colorScheme.outlineVariant),
         ColoredBox(
           color: sidebarBg,
-          child: ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Einstellungen'),
-            onTap: () {
-              if (isDrawer) Navigator.pop(context);
-              _showSettingsSheet();
-            },
+          child: Padding(
+            padding: EdgeInsets.only(bottom: safePadding.bottom),
+            child: ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Einstellungen'),
+              onTap: () {
+                if (isDrawer) Navigator.pop(context);
+                _showSettingsSheet();
+              },
+            ),
           ),
         ),
       ],
@@ -339,10 +347,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildDrawer() {
+    final bg = Theme.of(context).colorScheme.surfaceContainerLow;
     return Drawer(
-      child: SafeArea(
-        child: _buildSidebarContent(isDrawer: true),
-      ),
+      backgroundColor: bg,
+      child: _buildSidebarContent(isDrawer: true),
     );
   }
 
@@ -368,9 +376,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 300,
                     child: Material(
                       color: colorScheme.surfaceContainerLow,
-                      child: SafeArea(
-                        child: _buildSidebarContent(isDrawer: false),
-                      ),
+                      child: _buildSidebarContent(isDrawer: false),
                     ),
                   ),
                   VerticalDivider(

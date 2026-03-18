@@ -33,9 +33,13 @@ class _PatternMemoryScreenState extends State<PatternMemoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_state.showStartScreen) {
-      return PatternStartView(state: _state);
+    switch (_state.gamePhase) {
+      case PatternGamePhase.start:
+        return PatternStartView(state: _state);
+      case PatternGamePhase.playing:
+        return PatternPlayingView(state: _state);
+      case PatternGamePhase.gameover:
+        return PatternGameoverView(state: _state);
     }
-    return PatternPlayingView(state: _state);
   }
 }

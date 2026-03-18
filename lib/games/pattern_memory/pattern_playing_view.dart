@@ -25,27 +25,22 @@ class PatternPlayingView extends StatelessWidget {
                 tooltip: 'Abbrechen',
               ),
               const Spacer(),
-              Column(
-                children: [
-                  Text(
-                    'LEVEL',
-                    style: textTheme.labelSmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      letterSpacing: 1,
-                      fontSize: 10,
-                    ),
-                  ),
-                  Text(
-                    '${state.level}',
-                    style: textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              const SizedBox(width: 48),
+              Icon(Icons.timer_outlined, size: 16,
+                color: state.remainingSeconds <= 10
+                  ? Colors.red : colorScheme.onSurfaceVariant),
+              const SizedBox(width: 4),
+              Text(state.timerDisplay,
+                style: textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'monospace',
+                  color: state.remainingSeconds <= 10
+                    ? Colors.red : colorScheme.onSurfaceVariant)),
+              const SizedBox(width: 16),
+              Text('Level ', style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant)),
+              Text('${state.level}',
+                style: textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold, color: colorScheme.primary)),
             ],
           ),
         ),
@@ -221,5 +216,78 @@ class PatternPlayingView extends StatelessWidget {
       ];
     }
     return null;
+  }
+}
+
+class PatternGameoverView extends StatelessWidget {
+  final PatternGameState state;
+
+  const PatternGameoverView({super.key, required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                state.completedLevels >= 10 ? Icons.emoji_events
+                    : state.completedLevels >= 5 ? Icons.trending_up : Icons.refresh,
+                size: 64,
+                color: state.completedLevels >= 10 ? Colors.amber
+                    : state.completedLevels >= 5 ? Colors.orange : Colors.red,
+              ),
+              const SizedBox(height: 16),
+              Text('Zeit abgelaufen!', style: textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: colorScheme.outlineVariant),
+                ),
+                child: Column(
+                  children: [
+                    Text('Geschaffte Level', style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant)),
+                    const SizedBox(height: 4),
+                    Text('${state.completedLevels}',
+                      style: textTheme.displaySmall?.copyWith(
+                        fontFamily: 'monospace', color: colorScheme.primary,
+                        fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              FilledButton(
+                onPressed: state.startGame,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48)),
+                child: const Text('Nochmal'),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: state.returnToStart,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48)),
+                child: const Text('Zurück zum Start'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
