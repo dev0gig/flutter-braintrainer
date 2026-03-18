@@ -266,59 +266,73 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSidebarContent({bool isDrawer = true}) {
     final colorScheme = Theme.of(context).colorScheme;
+    final sidebarBg = colorScheme.surfaceContainerLow;
 
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Row(
-            children: [
-              Icon(Icons.psychology_alt, color: colorScheme.primary),
-              const SizedBox(width: 8),
-              Text(
-                'BrainTrainer',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
-              ),
-            ],
-          ),
-        ),
-        const Divider(),
-        Expanded(
-          child: ClipRect(
-            child: ListView.builder(
-              itemCount: games.length,
-              itemBuilder: (context, index) {
-                final game = games[index];
-                final isSelected = index == _selectedIndex;
-                return ListTile(
-                  leading: Icon(game.icon),
-                  title: Text(game.name),
-                  subtitle: Text(
-                    game.description,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                  selected: isSelected,
-                  selectedTileColor:
-                      colorScheme.primaryContainer.withValues(alpha: 0.3),
-                  onTap: () => _selectGame(index, closeDrawer: isDrawer),
-                );
-              },
+        ColoredBox(
+          color: sidebarBg,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Row(
+              children: [
+                Icon(Icons.psychology_alt, color: colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  'BrainTrainer',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                ),
+              ],
             ),
           ),
         ),
-        const Divider(),
-        ListTile(
-          leading: const Icon(Icons.settings),
-          title: const Text('Einstellungen'),
-          onTap: () {
-            if (isDrawer) Navigator.pop(context);
-            _showSettingsSheet();
-          },
+        Divider(height: 1, thickness: 1, color: colorScheme.outlineVariant),
+        Expanded(
+          child: ClipRect(
+            child: MediaQuery.removePadding(
+              context: context,
+              removeTop: true,
+              removeBottom: true,
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                clipBehavior: Clip.hardEdge,
+                itemCount: games.length,
+                itemBuilder: (context, index) {
+                  final game = games[index];
+                  final isSelected = index == _selectedIndex;
+                  return ListTile(
+                    leading: Icon(game.icon),
+                    title: Text(game.name),
+                    subtitle: Text(
+                      game.description,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                    selected: isSelected,
+                    selectedTileColor:
+                        colorScheme.primaryContainer.withValues(alpha: 0.3),
+                    onTap: () => _selectGame(index, closeDrawer: isDrawer),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+        Divider(height: 1, thickness: 1, color: colorScheme.outlineVariant),
+        ColoredBox(
+          color: sidebarBg,
+          child: ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('Einstellungen'),
+            onTap: () {
+              if (isDrawer) Navigator.pop(context);
+              _showSettingsSheet();
+            },
+          ),
         ),
       ],
     );
