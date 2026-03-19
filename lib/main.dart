@@ -10,7 +10,7 @@ ThemeData _buildTheme(ColorScheme colorScheme) {
   final isDark = colorScheme.brightness == Brightness.dark;
 
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    systemNavigationBarColor: colorScheme.surface,
+    systemNavigationBarColor: Colors.transparent,
     systemNavigationBarIconBrightness:
         isDark ? Brightness.light : Brightness.dark,
   ));
@@ -38,6 +38,7 @@ ThemeData _buildTheme(ColorScheme colorScheme) {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   await Hive.initFlutter();
   runApp(const BrainTrainerApp());
 }
