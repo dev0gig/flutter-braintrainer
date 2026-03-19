@@ -397,7 +397,7 @@ class _HomeScreenState extends State<HomeScreen> {
             centerTitle: true,
           ),
           drawer: _buildDrawer(),
-          drawerEdgeDragWidth: MediaQuery.of(context).size.width / 2,
+          drawerEnableOpenDragGesture: false,
           body: SafeArea(
             top: false,
             child: _currentGame,
