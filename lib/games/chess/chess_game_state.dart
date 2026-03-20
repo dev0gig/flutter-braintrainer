@@ -401,6 +401,7 @@ class ChessGameState extends ChangeNotifier {
     if (currentPuzzle == null || puzzleStatus != 'playing') return;
     solutionRevealed = true;
     hintSquare = null;
+    _stopStopwatch();
 
     // Play all remaining solution moves
     while (puzzleSolutionIndex < currentPuzzle!.moves.length) {
@@ -415,11 +416,11 @@ class ChessGameState extends ChangeNotifier {
       puzzleSolutionIndex++;
     }
 
-    puzzleStatus = 'solved';
-    puzzleFeedback = 'solved';
+    puzzleStatus = 'revealed';
+    puzzleFeedback = 'revealed';
     selected = null;
     legalTargets = [];
-    // No score increment — solution was revealed
+    // No score increment, no stats — solution was revealed
     notifyListeners();
   }
 

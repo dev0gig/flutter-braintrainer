@@ -331,6 +331,19 @@ class _SettingsSection extends StatelessWidget {
     );
     final avg = scores.map((s) => s.score).reduce((a, b) => a + b) / scores.length;
 
+    // Time limit from settings (for context display)
+    final timeLimit = scores.first.timeLimit;
+    final timeSuffix = timeLimit != null ? ' in ${_formatTime(timeLimit)}' : '';
+
+    // Time stats from elapsedSeconds in settings
+    final times = scores
+        .map((s) => s.elapsedSeconds)
+        .whereType<int>()
+        .toList();
+    final hasTime = times.isNotEmpty;
+    final bestTime = hasTime ? times.reduce((a, b) => a < b ? a : b) : 0;
+    final avgTime = hasTime ? (times.reduce((a, b) => a + b) / times.length).round() : 0;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -351,15 +364,13 @@ class _SettingsSection extends StatelessWidget {
               children: [
                 _StatItem(
                   label: 'Bester',
-                  value: lowerIsBetter ? _formatTime(best) : '$best',
+                  value: '${lowerIsBetter ? _formatTime(best) : '$best'}$timeSuffix',
                   colorScheme: colorScheme,
                 ),
                 const SizedBox(width: 16),
                 _StatItem(
                   label: 'Durchschnitt',
-                  value: lowerIsBetter
-                      ? _formatTime(avg.round())
-                      : avg.toStringAsFixed(1),
+                  value: '${lowerIsBetter ? _formatTime(avg.round()) : avg.toStringAsFixed(1)}$timeSuffix',
                   colorScheme: colorScheme,
                 ),
                 const SizedBox(width: 16),
@@ -370,6 +381,25 @@ class _SettingsSection extends StatelessWidget {
                 ),
               ],
             ),
+            // Time stats row (for games that track elapsed time separately)
+            if (hasTime && !lowerIsBetter) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  _StatItem(
+                    label: 'Beste Zeit',
+                    value: _formatTime(bestTime),
+                    colorScheme: colorScheme,
+                  ),
+                  const SizedBox(width: 16),
+                  _StatItem(
+                    label: 'Ø Zeit',
+                    value: _formatTime(avgTime),
+                    colorScheme: colorScheme,
+                  ),
+                ],
+              ),
+            ],
             // Graph
             if (scores.length >= 2) ...[
               const SizedBox(height: 12),

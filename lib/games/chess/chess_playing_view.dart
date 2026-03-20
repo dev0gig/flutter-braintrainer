@@ -139,9 +139,9 @@ class ChessPlayingView extends StatelessWidget {
             ),
           ),
 
-        // Puzzle solved overlay
+        // Puzzle solved/revealed overlay
         if (state.gameMode == ChessGameMode.puzzle &&
-            state.puzzleStatus == 'solved')
+            (state.puzzleStatus == 'solved' || state.puzzleStatus == 'revealed'))
           _buildPuzzleSolved(colorScheme, textTheme),
 
         // Game over overlay (computer mode)
@@ -183,6 +183,17 @@ class ChessPlayingView extends StatelessWidget {
             const SizedBox(width: 4),
             Text('Richtig!',
                 style: textTheme.bodySmall?.copyWith(color: Colors.green)),
+          ],
+        );
+      }
+      if (state.puzzleFeedback == 'revealed') {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.visibility, size: 16, color: Colors.orange),
+            const SizedBox(width: 4),
+            Text('Lösung angezeigt',
+                style: textTheme.bodySmall?.copyWith(color: Colors.orange)),
           ],
         );
       }
@@ -341,23 +352,28 @@ class ChessPlayingView extends StatelessWidget {
   }
 
   Widget _buildPuzzleSolved(ColorScheme colorScheme, TextTheme textTheme) {
+    final isRevealed = state.solutionRevealed;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         children: [
           Icon(
-            state.solutionRevealed ? Icons.visibility : Icons.check_circle,
+            isRevealed ? Icons.visibility : Icons.check_circle,
             size: 48,
-            color: state.solutionRevealed ? Colors.orange : Colors.green,
+            color: isRevealed ? Colors.orange : Colors.green,
           ),
           const SizedBox(height: 8),
-          Text(state.solutionRevealed ? 'Lösung' : 'Richtig!',
+          Text(isRevealed ? 'Lösung' : 'Richtig!',
               style: textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text('${state.puzzleScore} von ${state.puzzleTotal + 1} gelöst  (${state.elapsedFormatted})',
-              style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant)),
+          Text(
+            isRevealed
+                ? 'Nicht gewertet'
+                : '${state.puzzleScore} von ${state.puzzleTotal + 1} gelöst  (${state.elapsedFormatted})',
+            style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant),
+          ),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,

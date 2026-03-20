@@ -195,7 +195,7 @@ class AnagramGameState extends ChangeNotifier {
       score: score,
       date: DateTime.now(),
       difficulty: difficulty.name,
-      settings: {'difficulty': difficulty.name},
+      settings: {'difficulty': difficulty.name, 'timeLimit': '60'},
     ));
     notifyListeners();
   }

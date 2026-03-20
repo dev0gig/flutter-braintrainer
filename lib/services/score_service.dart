@@ -17,14 +17,31 @@ class ScoreEntry {
   });
 
   /// Key for grouping scores by settings combination.
+  /// Excludes per-game values like elapsedSeconds from grouping.
   String get settingsKey {
     if (settings == null || settings!.isEmpty) {
       // Fall back to difficulty for old entries
       return difficulty ?? '';
     }
-    final sorted = settings!.entries.toList()
+    final sorted = settings!.entries
+        .where((e) => e.key != 'elapsedSeconds' && e.key != 'timeLimit')
+        .toList()
       ..sort((a, b) => a.key.compareTo(b.key));
     return sorted.map((e) => '${e.key}=${e.value}').join('|');
+  }
+
+  /// Elapsed seconds from settings, if available.
+  int? get elapsedSeconds {
+    final val = settings?['elapsedSeconds'];
+    if (val == null) return null;
+    return int.tryParse(val);
+  }
+
+  /// Time limit from settings, if available.
+  int? get timeLimit {
+    final val = settings?['timeLimit'];
+    if (val == null) return null;
+    return int.tryParse(val);
   }
 
   Map<String, dynamic> toMap() => {
@@ -49,7 +66,10 @@ class ScoreEntry {
 /// Human-readable label for a settings combination.
 String settingsLabel(String gameId, Map<String, String>? settings, String? difficulty) {
   if (settings != null && settings.isNotEmpty) {
-    return settings.entries.map((e) => _formatValue(gameId, e.key, e.value)).join(' · ');
+    final filtered = settings.entries.where((e) => e.key != 'elapsedSeconds' && e.key != 'timeLimit');
+    if (filtered.isNotEmpty) {
+      return filtered.map((e) => _formatValue(gameId, e.key, e.value)).join(' · ');
+    }
   }
   if (difficulty != null && difficulty.isNotEmpty) {
     return _translateDifficulty(difficulty);
