@@ -350,6 +350,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final bg = Theme.of(context).colorScheme.surfaceContainerLow;
     return Drawer(
       backgroundColor: bg,
+      elevation: 0,
       child: _buildSidebarContent(isDrawer: true),
     );
   }

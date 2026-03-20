@@ -21,6 +21,7 @@ ThemeData _buildTheme(ColorScheme colorScheme) {
     scaffoldBackgroundColor: colorScheme.surface,
     appBarTheme: AppBarTheme(
       backgroundColor: colorScheme.surfaceContainer,
+      scrolledUnderElevation: 0,
       titleTextStyle: TextStyle(
         color: colorScheme.onSurface,
         fontSize: 22,
