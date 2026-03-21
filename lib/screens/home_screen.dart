@@ -162,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ScrollConfiguration(
                 behavior: ScrollConfiguration.of(context).copyWith(overscroll: false),
                 child: ListView.builder(
-                  padding: EdgeInsets.zero,
+                  padding: EdgeInsets.only(bottom: safePadding.bottom),
                   clipBehavior: Clip.hardEdge,
                   physics: const ClampingScrollPhysics(),
                   itemCount: games.length,
