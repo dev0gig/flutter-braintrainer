@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/game_state_service.dart';
-import '../../services/score_service.dart';
 
 enum SudokuDifficulty { easy, medium, hard }
 
@@ -303,16 +302,6 @@ class SudokuGameState extends ChangeNotifier {
     isComplete = true;
     _stopStopwatch();
     GameStateService.clearState('sudoku');
-    ScoreService.saveScore(ScoreEntry(
-      gameId: 'sudoku',
-      score: elapsedSeconds,
-      date: DateTime.now(),
-      difficulty: difficulty.name,
-      settings: {
-        'difficulty': difficulty.name,
-        'elapsedSeconds': '$elapsedSeconds',
-      },
-    ));
   }
 
   @override

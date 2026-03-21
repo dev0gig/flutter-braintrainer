@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../services/score_service.dart';
 
 enum StroopPhase { start, playing, gameover }
 
@@ -129,13 +128,6 @@ class StroopGameState extends ChangeNotifier {
     feedback = null;
     selectedIndex = null;
     phase = StroopPhase.gameover;
-    ScoreService.saveScore(ScoreEntry(
-      gameId: 'stroop-test',
-      score: correctCount,
-      date: DateTime.now(),
-      difficulty: difficulty.name,
-      settings: {'difficulty': difficulty.name, 'rounds': '$maxRounds', 'timeLimit': '$totalSeconds'},
-    ));
     notifyListeners();
   }
 

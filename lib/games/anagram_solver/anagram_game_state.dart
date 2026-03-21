@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../services/score_service.dart';
 import 'anagram_words.dart';
 
 enum Difficulty { easy, medium, hard }
@@ -190,13 +189,6 @@ class AnagramGameState extends ChangeNotifier {
   void _finishGame() {
     _stopTimer();
     phase = GamePhase.result;
-    ScoreService.saveScore(ScoreEntry(
-      gameId: 'anagram-solver',
-      score: score,
-      date: DateTime.now(),
-      difficulty: difficulty.name,
-      settings: {'difficulty': difficulty.name, 'timeLimit': '60'},
-    ));
     notifyListeners();
   }
 

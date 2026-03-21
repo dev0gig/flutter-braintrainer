@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../services/score_service.dart';
 
 enum SwitchPhase { start, playing, result }
 
@@ -212,12 +211,6 @@ class SwitchingGameState extends ChangeNotifier {
   void _endGame() {
     _cleanup();
     phase = SwitchPhase.result;
-    ScoreService.saveScore(ScoreEntry(
-      gameId: 'switching-task',
-      score: score,
-      date: DateTime.now(),
-      settings: {'trials': '$totalTrials', 'timeLimit': '$totalSeconds'},
-    ));
     notifyListeners();
   }
 

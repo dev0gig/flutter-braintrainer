@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../services/score_service.dart';
 
 enum MemoryDifficulty {
   easy,   // 4x3 = 6 pairs
@@ -158,15 +157,6 @@ class MemoryGameState extends ChangeNotifier {
     _countdownTimer?.cancel();
     _isChecking = false;
     phase = MemoryPhase.gameover;
-    ScoreService.saveScore(ScoreEntry(
-      gameId: 'memory-cards',
-      score: elapsedSeconds,
-      date: DateTime.now(),
-      difficulty: difficulty.name,
-      settings: {
-        'difficulty': difficulty.name,
-      },
-    ));
     notifyListeners();
   }
 

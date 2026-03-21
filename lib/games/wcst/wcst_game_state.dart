@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../services/score_service.dart';
 
 enum WcstPhase { start, playing, result }
 
@@ -232,12 +231,6 @@ class WcstGameState extends ChangeNotifier {
     _countdownTimer?.cancel();
     _feedbackTimer?.cancel();
     phase = WcstPhase.result;
-    ScoreService.saveScore(ScoreEntry(
-      gameId: 'wcst',
-      score: accuracy,
-      date: DateTime.now(),
-      settings: {'timeLimit': '$totalSeconds'},
-    ));
     notifyListeners();
   }
 

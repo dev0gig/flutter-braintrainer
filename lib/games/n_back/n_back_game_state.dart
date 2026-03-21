@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../services/score_service.dart';
 
 enum NBackPhase { start, playing, result }
 
@@ -182,12 +181,6 @@ class NBackGameState extends ChangeNotifier {
 
     _cleanup();
     phase = NBackPhase.result;
-    ScoreService.saveScore(ScoreEntry(
-      gameId: 'n-back',
-      score: accuracy,
-      date: DateTime.now(),
-      settings: {'nLevel': '$nLevel', 'speed': '$speed', 'trials': '$totalTrials'},
-    ));
     notifyListeners();
   }
 

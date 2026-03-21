@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../services/score_service.dart';
 
 enum PatternPhase { preview, recall, result }
 enum PatternGamePhase { start, playing, gameover }
@@ -160,12 +159,6 @@ class PatternGameState extends ChangeNotifier {
     _timeout?.cancel();
     _countdownTimer?.cancel();
     gamePhase = PatternGamePhase.gameover;
-    ScoreService.saveScore(ScoreEntry(
-      gameId: 'pattern-memory',
-      score: completedLevels,
-      date: DateTime.now(),
-      settings: {'grid': '${gridCols}x$gridRows', 'preview': '$previewTimeMs', 'timeLimit': '$totalSeconds'},
-    ));
     notifyListeners();
   }
 

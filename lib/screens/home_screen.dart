@@ -1,11 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart' show getTemporaryDirectory;
 import '../models/game_definition.dart';
-import '../services/score_service.dart';
-import 'scores_screen.dart';
 import '../games/anagram_solver/anagram_solver_screen.dart';
 import '../games/math_trainer/math_trainer_screen.dart';
 import '../games/n_back/n_back_screen.dart';
@@ -133,7 +127,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showSettingsSheet() {
-    final colorScheme = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -152,105 +145,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.bar_chart),
-                title: const Text('Statistiken'),
-                subtitle: const Text('Score-Verlauf aller Spiele'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    this.context,
-                    MaterialPageRoute(
-                      builder: (_) => const ScoresScreen(),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.upload),
-                title: const Text('Scores exportieren'),
-                subtitle: const Text('Als JSON-Datei teilen'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final json = await ScoreService.exportJson();
-                  final dir = await getTemporaryDirectory();
-                  final file = File('${dir.path}/braintrainer_scores.json');
-                  await file.writeAsString(json);
-                  await SharePlus.instance.share(
-                    ShareParams(files: [XFile(file.path)]),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.download),
-                title: const Text('Scores importieren'),
-                subtitle: const Text('JSON-Backup einlesen'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final result = await FilePicker.platform.pickFiles(
-                    type: FileType.any,
-                  );
-                  if (result == null || result.files.single.path == null) return;
-                  final file = File(result.files.single.path!);
-                  final json = await file.readAsString();
-                  try {
-                    final count = await ScoreService.importJson(json);
-                    if (mounted) {
-                      ScaffoldMessenger.of(this.context).showSnackBar(
-                        SnackBar(content: Text('$count Scores importiert')),
-                      );
-                    }
-                  } catch (_) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(this.context).showSnackBar(
-                        const SnackBar(content: Text('Ungültige Datei')),
-                      );
-                    }
-                  }
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.delete_outline, color: colorScheme.error),
-                title: Text(
-                  'Alle Scores zurücksetzen',
-                  style: TextStyle(color: colorScheme.error),
-                ),
-                subtitle: const Text('Löscht alle gespeicherten Spielstände'),
-                onTap: () {
-                  Navigator.pop(context);
-                  showDialog(
-                    context: this.context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Scores zurücksetzen?'),
-                      content: const Text(
-                        'Alle gespeicherten Spielstände werden unwiderruflich gelöscht.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Abbrechen'),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            Navigator.pop(context);
-                            await ScoreService.clearAll();
-                            if (mounted) {
-                              ScaffoldMessenger.of(this.context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('Scores zurückgesetzt')),
-                              );
-                            }
-                          },
-                          child: Text(
-                            'Löschen',
-                            style: TextStyle(color: colorScheme.error),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
               ),
               ListTile(
                 leading: const Icon(Icons.info_outline),

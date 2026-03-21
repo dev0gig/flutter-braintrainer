@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../services/score_service.dart';
 
 enum MathDifficulty { easy, medium, hard }
 
@@ -303,17 +302,6 @@ class MathGameState extends ChangeNotifier {
   }
 
   void _saveSequenceScore() {
-    ScoreService.saveScore(ScoreEntry(
-      gameId: 'math-trainer',
-      score: score,
-      date: DateTime.now(),
-      difficulty: difficulty.name,
-      settings: {
-        'difficulty': difficulty.name,
-        'mode': 'sequence',
-        'timeLimit': '60',
-      },
-    ));
   }
 
   void _generateQuestion() {
@@ -424,13 +412,6 @@ class MathGameState extends ChangeNotifier {
     _stopTimer();
     timeLeft = 0;
     phase = MathPhase.result;
-    ScoreService.saveScore(ScoreEntry(
-      gameId: 'math-trainer',
-      score: score,
-      date: DateTime.now(),
-      difficulty: difficulty.name,
-      settings: {'difficulty': difficulty.name, 'mode': mode.name, 'timeLimit': '60'},
-    ));
     notifyListeners();
   }
 

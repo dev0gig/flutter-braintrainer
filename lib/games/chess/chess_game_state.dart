@@ -5,7 +5,6 @@ import 'package:chess/chess.dart' as ch;
 import 'package:flutter/foundation.dart';
 
 import '../../services/game_state_service.dart';
-import '../../services/score_service.dart';
 import 'chess_puzzles.dart';
 
 enum ChessGameMode { computer, puzzle }
@@ -223,17 +222,6 @@ class ChessGameState extends ChangeNotifier {
   }
 
   void _saveComputerScore() {
-    ScoreService.saveScore(ScoreEntry(
-      gameId: 'chess',
-      score: elapsedSeconds,
-      date: DateTime.now(),
-      difficulty: difficulty.name,
-      settings: {
-        'mode': gameMode.name,
-        'difficulty': difficulty.name,
-        'elapsedSeconds': '$elapsedSeconds',
-      },
-    ));
   }
 
   // --- Puzzle mode ---
@@ -330,17 +318,6 @@ class ChessGameState extends ChangeNotifier {
       puzzleScore++;
       puzzleFeedback = 'solved';
       _stopStopwatch();
-      ScoreService.saveScore(ScoreEntry(
-        gameId: 'chess',
-        score: puzzleScore,
-        date: DateTime.now(),
-        difficulty: puzzleCategory.name,
-        settings: {
-          'mode': gameMode.name,
-          'category': puzzleCategory.name,
-          'elapsedSeconds': '$elapsedSeconds',
-        },
-      ));
       notifyListeners();
       return;
     }
@@ -375,17 +352,6 @@ class ChessGameState extends ChangeNotifier {
       puzzleScore++;
       puzzleFeedback = 'solved';
       _stopStopwatch();
-      ScoreService.saveScore(ScoreEntry(
-        gameId: 'chess',
-        score: puzzleScore,
-        date: DateTime.now(),
-        difficulty: puzzleCategory.name,
-        settings: {
-          'mode': gameMode.name,
-          'category': puzzleCategory.name,
-          'elapsedSeconds': '$elapsedSeconds',
-        },
-      ));
     }
   }
 

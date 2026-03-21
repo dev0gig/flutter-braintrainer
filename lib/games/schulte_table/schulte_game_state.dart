@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../services/score_service.dart';
 
 class SchulteGameState extends ChangeNotifier {
   final _random = Random();
@@ -106,12 +105,6 @@ class SchulteGameState extends ChangeNotifier {
     timerDisplay = (_stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2);
     gameCompleted = true;
     isGameActive = false;
-    ScoreService.saveScore(ScoreEntry(
-      gameId: 'schulte-table',
-      score: (_stopwatch.elapsedMilliseconds / 1000).round(),
-      date: DateTime.now(),
-      settings: {'gridSize': '$gridSize'},
-    ));
     notifyListeners();
   }
 
