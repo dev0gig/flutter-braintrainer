@@ -126,38 +126,6 @@ class _HomeScreenState extends State<HomeScreen> {
     if (closeDrawer) Navigator.pop(context);
   }
 
-  void _showSettingsSheet() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Center(
-                child: Container(
-                  width: 32,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.info_outline),
-                title: const Text('Version'),
-                subtitle: const Text('1.0.0'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildSidebarContent({bool isDrawer = true}) {
     final colorScheme = Theme.of(context).colorScheme;
     final sidebarBg = colorScheme.surfaceContainerLow;
@@ -218,21 +186,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
               ),
-            ),
-          ),
-        ),
-        Divider(height: 1, thickness: 1, color: colorScheme.outlineVariant),
-        ColoredBox(
-          color: sidebarBg,
-          child: Padding(
-            padding: EdgeInsets.only(bottom: safePadding.bottom),
-            child: ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Einstellungen'),
-              onTap: () {
-                if (isDrawer) Navigator.pop(context);
-                _showSettingsSheet();
-              },
             ),
           ),
         ),
